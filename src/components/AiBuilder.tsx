@@ -287,6 +287,7 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
                   initial={{ width: "0%" }}
                   animate={{ width: `${progress}%` }}
                   transition={{ duration: 0.3 }}
+                />
               </div>
               <p className="text-xs text-muted-foreground mt-3">{progress}% complete</p>
 
