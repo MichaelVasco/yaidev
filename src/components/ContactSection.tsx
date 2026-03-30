@@ -9,6 +9,8 @@ const contactMethods = [
     value: "+234 904 718 8353",
     href: "tel:+2349047188353",
     description: "Tap to call us directly",
+    color: "text-blue",
+    bg: "bg-blue/10 group-hover:bg-blue/20",
   },
   {
     icon: Mail,
@@ -16,6 +18,8 @@ const contactMethods = [
     value: "superstarmichaelvasco@gmail.com",
     href: "mailto:superstarmichaelvasco@gmail.com",
     description: "Send us an email",
+    color: "text-purple",
+    bg: "bg-purple/10 group-hover:bg-purple/20",
   },
   {
     icon: MessageCircle,
@@ -23,6 +27,8 @@ const contactMethods = [
     value: "+234 904 718 8353",
     href: "https://wa.me/2349047188353?text=Good%20day%20Yaidev%2C%20I%20have%20an%20enquiry",
     description: "Chat with us on WhatsApp",
+    color: "text-teal",
+    bg: "bg-teal/10 group-hover:bg-teal/20",
   },
 ];
 
@@ -56,12 +62,12 @@ const ContactSection = () => {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-xs font-medium tracking-[0.25em] uppercase text-primary mb-4 block"
+            className="text-xs font-medium tracking-[0.25em] uppercase text-cyan mb-4 block"
           >
             Get In Touch
           </motion.span>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-foreground mb-6">
-            Contact <span className="text-primary">Yaidev</span>
+            Contact <span className="text-gradient-cyan">Yaidev</span>
           </h2>
         </motion.div>
 
@@ -73,7 +79,7 @@ const ContactSection = () => {
             viewport={{ once: true }}
             className="lg:col-span-2 space-y-5"
           >
-            {contactMethods.map(({ icon: Icon, label, value, href, description }, i) => (
+            {contactMethods.map(({ icon: Icon, label, value, href, description, color, bg }, i) => (
               <motion.a
                 key={label}
                 href={href}
@@ -84,14 +90,14 @@ const ContactSection = () => {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
                 whileHover={{ x: 4 }}
-                className="group flex items-start gap-4 bg-card rounded-xl border border-border p-5 hover:border-primary/30 hover:shadow-md transition-all duration-300"
+                className="group flex items-start gap-4 bg-card rounded-xl border border-border p-5 hover:border-blue/20 hover:shadow-md transition-all duration-300"
               >
-                <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
-                  <Icon size={20} className="text-primary group-hover:text-primary-foreground transition-colors duration-300" />
+                <div className={`w-11 h-11 rounded-lg ${bg} flex items-center justify-center flex-shrink-0 transition-colors duration-300`}>
+                  <Icon size={20} className={`${color} transition-colors duration-300`} />
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-heading font-semibold text-foreground">{label}</p>
-                  <p className="text-primary text-sm font-medium truncate">{value}</p>
+                  <p className={`${color} text-sm font-medium truncate`}>{value}</p>
                   <p className="text-xs text-muted-foreground mt-1">{description}</p>
                 </div>
               </motion.a>
@@ -105,12 +111,12 @@ const ContactSection = () => {
               transition={{ delay: 0.3 }}
               className="flex items-start gap-4 bg-card rounded-xl border border-border p-5"
             >
-              <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <MapPin size={20} className="text-primary" />
+              <div className="w-11 h-11 rounded-lg bg-cyan/10 flex items-center justify-center flex-shrink-0">
+                <MapPin size={20} className="text-cyan" />
               </div>
               <div>
                 <p className="text-sm font-heading font-semibold text-foreground">Headquarters</p>
-                <p className="text-primary text-sm font-medium">San Francisco, CA</p>
+                <p className="text-cyan text-sm font-medium">San Francisco, CA</p>
                 <p className="text-xs text-muted-foreground mt-1">United States of America</p>
               </div>
             </motion.div>
@@ -123,7 +129,8 @@ const ContactSection = () => {
             viewport={{ once: true }}
             className="lg:col-span-3"
           >
-            <div className="bg-card rounded-2xl border border-border p-8 shadow-sm">
+            <div className="bg-card rounded-2xl border border-border p-8 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-purple/30 to-transparent" />
               <h3 className="font-heading font-bold text-foreground text-lg mb-1">Send Us a Message</h3>
               <p className="text-muted-foreground text-sm mb-6">We typically respond within 24 hours.</p>
 
@@ -133,8 +140,8 @@ const ContactSection = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   className="text-center py-12"
                 >
-                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <Send size={24} className="text-primary" />
+                  <div className="w-14 h-14 rounded-full bg-teal/10 flex items-center justify-center mx-auto mb-4">
+                    <Send size={24} className="text-teal" />
                   </div>
                   <h4 className="font-heading font-bold text-foreground text-lg">Message Sent!</h4>
                   <p className="text-muted-foreground text-sm mt-2">Thank you for reaching out. We'll get back to you shortly.</p>
@@ -144,26 +151,27 @@ const ContactSection = () => {
                   <div className="grid sm:grid-cols-2 gap-4">
                     <input
                       type="text" placeholder="Your Name" required value={form.name} onChange={update("name")}
-                      className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm transition-all"
+                      className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-blue/30 text-sm transition-all"
                     />
                     <input
                       type="email" placeholder="Your Email" required value={form.email} onChange={update("email")}
-                      className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm transition-all"
+                      className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-purple/30 text-sm transition-all"
                     />
                   </div>
                   <input
                     type="text" placeholder="Subject" required value={form.subject} onChange={update("subject")}
-                    className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm transition-all"
+                    className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-teal/30 text-sm transition-all"
                   />
                   <textarea
                     placeholder="Your Message" rows={5} required value={form.message} onChange={update("message")}
-                    className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm transition-all resize-none"
+                    className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-cyan/30 text-sm transition-all resize-none"
                   />
                   <motion.button
                     type="submit"
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
-                    className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-heading font-semibold text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 rounded-lg font-heading font-semibold text-sm text-white transition-all flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-blue/20"
+                    style={{ background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple)))" }}
                   >
                     <Send size={16} />
                     Send Message

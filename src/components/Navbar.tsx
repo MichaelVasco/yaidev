@@ -34,8 +34,8 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <a href="#home" className="font-heading text-xl font-bold text-primary tracking-tight">
-            YAIDEV
+          <a href="#home" className="font-heading text-xl font-bold tracking-tight">
+            <span className="text-gradient">YAIDEV</span>
           </a>
 
           <div className="hidden lg:flex items-center gap-1.5">

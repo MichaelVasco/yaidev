@@ -26,7 +26,8 @@ const Footer = () => (
         </div>
         <a
           href="#contact"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-sm hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-heading font-semibold text-sm hover:shadow-lg hover:shadow-blue/20 transition-all duration-300"
+          style={{ background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple)))" }}
         >
           Get Started <ArrowRight size={14} />
         </a>
@@ -35,7 +36,7 @@ const Footer = () => (
       {/* Main footer grid */}
       <div className="py-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
         <div className="lg:col-span-1">
-          <h4 className="font-heading text-xl font-bold text-foreground mb-4 tracking-tight">YAIDEV</h4>
+          <h4 className="font-heading text-xl font-bold mb-4 tracking-tight"><span className="text-gradient">YAIDEV</span></h4>
           <p className="text-muted-foreground text-sm leading-relaxed mb-6">
             A global technology corporation building intelligent digital solutions for businesses and individuals worldwide.
           </p>

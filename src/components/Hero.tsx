@@ -6,18 +6,18 @@ import {
 } from "lucide-react";
 
 const floatingIcons = [
-  { Icon: Laptop, x: -180, y: -120, delay: 0 },
-  { Icon: Smartphone, x: 190, y: -105, delay: 0.3 },
-  { Icon: Code2, x: -230, y: 35, delay: 0.6 },
-  { Icon: Gamepad2, x: 210, y: 55, delay: 0.9 },
-  { Icon: Bot, x: -145, y: 145, delay: 1.2 },
-  { Icon: Palette, x: 165, y: 145, delay: 0.4 },
-  { Icon: Monitor, x: -65, y: -165, delay: 0.7 },
-  { Icon: BrainCircuit, x: 85, y: -155, delay: 1.0 },
-  { Icon: Globe, x: -260, y: -25, delay: 0.2 },
-  { Icon: Cpu, x: 260, y: -15, delay: 0.5 },
-  { Icon: Terminal, x: -105, y: 185, delay: 0.8 },
-  { Icon: Layers, x: 105, y: 185, delay: 1.1 },
+  { Icon: Laptop, x: -180, y: -120, delay: 0, color: "text-blue" },
+  { Icon: Smartphone, x: 190, y: -105, delay: 0.3, color: "text-purple" },
+  { Icon: Code2, x: -230, y: 35, delay: 0.6, color: "text-teal" },
+  { Icon: Gamepad2, x: 210, y: 55, delay: 0.9, color: "text-cyan" },
+  { Icon: Bot, x: -145, y: 145, delay: 1.2, color: "text-blue" },
+  { Icon: Palette, x: 165, y: 145, delay: 0.4, color: "text-purple" },
+  { Icon: Monitor, x: -65, y: -165, delay: 0.7, color: "text-teal" },
+  { Icon: BrainCircuit, x: 85, y: -155, delay: 1.0, color: "text-cyan" },
+  { Icon: Globe, x: -260, y: -25, delay: 0.2, color: "text-blue" },
+  { Icon: Cpu, x: 260, y: -15, delay: 0.5, color: "text-purple" },
+  { Icon: Terminal, x: -105, y: 185, delay: 0.8, color: "text-teal" },
+  { Icon: Layers, x: 105, y: 185, delay: 1.1, color: "text-cyan" },
 ];
 
 const Hero = () => {
@@ -35,24 +35,30 @@ const Hero = () => {
       id="home"
       className="min-h-screen flex flex-col items-center justify-center bg-background relative overflow-hidden"
     >
-      {/* Tech grid */}
       <div className="absolute inset-0 tech-grid-bg" />
 
-      {/* Gradient orbs */}
-      <div className="absolute top-1/4 -left-32 w-96 h-96 rounded-full bg-primary/[0.04] blur-3xl" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 rounded-full bg-accent/[0.04] blur-3xl" />
+      {/* Multi-color gradient orbs */}
+      <div className="absolute top-1/4 -left-32 w-96 h-96 rounded-full bg-blue/[0.04] blur-3xl" />
+      <div className="absolute bottom-1/4 -right-32 w-96 h-96 rounded-full bg-purple/[0.04] blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-teal/[0.02] blur-[120px]" />
 
-      {/* Glow lines */}
-      {[...Array(5)].map((_, i) => (
+      {/* Glow lines with color variation */}
+      {[
+        { color: "var(--color-blue)", left: "15%", top: "8%", h: 150 },
+        { color: "var(--color-purple)", left: "33%", top: "20%", h: 180 },
+        { color: "var(--color-teal)", left: "51%", top: "32%", h: 210 },
+        { color: "var(--color-cyan)", left: "69%", top: "44%", h: 240 },
+        { color: "var(--color-blue)", left: "87%", top: "56%", h: 270 },
+      ].map((line, i) => (
         <div
           key={i}
           className="absolute animate-pulse-line"
           style={{
             width: '1px',
-            height: `${150 + i * 30}px`,
-            background: `linear-gradient(transparent, hsl(var(--primary) / 0.15), transparent)`,
-            left: `${15 + i * 18}%`,
-            top: `${8 + i * 12}%`,
+            height: `${line.h}px`,
+            background: `linear-gradient(transparent, hsl(${line.color} / 0.2), transparent)`,
+            left: line.left,
+            top: line.top,
             animationDelay: `${i * 0.6}s`,
           }}
         />
@@ -63,11 +69,11 @@ const Hero = () => {
         animate={entered ? { scale: 1.8, opacity: 0 } : { scale: 1, opacity: 1 }}
         transition={{ duration: 0.7, ease: "easeInOut" }}
       >
-        {/* Floating tech icons */}
-        {floatingIcons.map(({ Icon, x, y, delay }, i) => (
+        {/* Floating tech icons with colors */}
+        {floatingIcons.map(({ Icon, x, y, delay, color }, i) => (
           <motion.div
             key={i}
-            className="absolute text-primary/30 hidden sm:block"
+            className={`absolute ${color}/30 hidden sm:block`}
             initial={{ opacity: 0, scale: 0 }}
             animate={{
               opacity: [0.2, 0.5, 0.2],
@@ -83,69 +89,73 @@ const Hero = () => {
 
         {/* Connection lines */}
         <svg className="absolute w-[500px] h-[500px] pointer-events-none hidden sm:block" viewBox="-250 -250 500 500">
-          {floatingIcons.slice(0, 6).map((icon, i) => (
-            <motion.line
-              key={i}
-              x1={0} y1={0} x2={icon.x} y2={icon.y}
-              stroke="hsl(var(--primary))"
-              strokeWidth={0.4}
-              strokeOpacity={0.1}
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{ duration: 2.5, delay: icon.delay }}
-            />
-          ))}
+          {floatingIcons.slice(0, 6).map((icon, i) => {
+            const colors = ["var(--color-blue)", "var(--color-purple)", "var(--color-teal)", "var(--color-cyan)", "var(--color-blue)", "var(--color-purple)"];
+            return (
+              <motion.line
+                key={i}
+                x1={0} y1={0} x2={icon.x} y2={icon.y}
+                stroke={`hsl(${colors[i]})`}
+                strokeWidth={0.4}
+                strokeOpacity={0.15}
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 2.5, delay: icon.delay }}
+              />
+            );
+          })}
         </svg>
 
-        {/* Portal door */}
+        {/* Portal door with gradient */}
         <motion.button
           onClick={handleEnter}
-          className="relative z-10 w-56 sm:w-64 h-72 sm:h-80 rounded-2xl bg-gradient-to-b from-primary via-primary/95 to-brand-dark flex flex-col items-center justify-center cursor-pointer animate-portal-glow group focus:outline-none"
+          className="relative z-10 w-56 sm:w-64 h-72 sm:h-80 rounded-2xl flex flex-col items-center justify-center cursor-pointer animate-portal-glow group focus:outline-none"
+          style={{
+            background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple) / 0.9), hsl(var(--color-blue) / 0.8))",
+          }}
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.97 }}
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: "easeOut" }}
         >
-          <div className="absolute inset-[6px] rounded-[14px] border border-primary-foreground/15 flex flex-col items-center justify-center gap-5">
-            {/* Spinning ring */}
+          <div className="absolute inset-[6px] rounded-[14px] border border-white/15 flex flex-col items-center justify-center gap-5">
             <motion.div
-              className="w-14 h-14 rounded-full border-2 border-primary-foreground/40 flex items-center justify-center"
+              className="w-14 h-14 rounded-full border-2 border-white/40 flex items-center justify-center"
               animate={{ rotate: 360 }}
               transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
             >
-              <div className="w-10 h-10 rounded-full border-t-2 border-r-2 border-primary-foreground/70" />
+              <div className="w-10 h-10 rounded-full border-t-2 border-r-2 border-white/70" />
             </motion.div>
 
             <div className="space-y-2 text-center">
-              <span className="text-primary-foreground font-heading text-xl sm:text-2xl font-bold tracking-wide block">
+              <span className="text-white font-heading text-xl sm:text-2xl font-bold tracking-wide block">
                 Enter YAIDEV
               </span>
               <motion.div
-                className="w-10 h-[2px] bg-primary-foreground/40 rounded-full mx-auto"
+                className="w-10 h-[2px] rounded-full mx-auto"
+                style={{ background: "linear-gradient(90deg, hsl(var(--color-cyan)), hsl(var(--color-teal)))" }}
                 animate={{ scaleX: [1, 1.6, 1] }}
                 transition={{ duration: 2.5, repeat: Infinity }}
               />
             </div>
 
-            <span className="text-primary-foreground/50 text-[11px] tracking-wider uppercase">
+            <span className="text-white/50 text-[11px] tracking-wider uppercase">
               Click to explore
             </span>
           </div>
 
-          {/* Corner brackets */}
           {[
             'top-0 left-0 border-t border-l rounded-tl-2xl',
             'top-0 right-0 border-t border-r rounded-tr-2xl',
             'bottom-0 left-0 border-b border-l rounded-bl-2xl',
             'bottom-0 right-0 border-b border-r rounded-br-2xl',
           ].map((cls, i) => (
-            <div key={i} className={`absolute ${cls} w-6 h-6 border-primary-foreground/20`} />
+            <div key={i} className={`absolute ${cls} w-6 h-6 border-white/20`} />
           ))}
         </motion.button>
       </motion.div>
 
-      {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: entered ? 0 : 1 }}
