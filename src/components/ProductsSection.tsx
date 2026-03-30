@@ -70,7 +70,7 @@ const ProductsSection = () => (
             viewport={{ once: true }}
             transition={{ delay: i * 0.12, duration: 0.45 }}
             whileHover={{ y: -5 }}
-            className="group relative bg-card rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-xl hover:border-blue/20 transition-all duration-500 flex flex-col"
+            className="group relative bg-card rounded-2xl border border-border overflow-hidden card-glow hover:border-blue/20 transition-all duration-500 flex flex-col"
           >
             <div className={`h-1 w-full bg-gradient-to-r ${gradient}`} />
             <div className="p-7 flex flex-col flex-1">

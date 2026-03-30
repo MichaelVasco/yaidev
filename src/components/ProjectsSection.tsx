@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import FloatingParticles from "@/components/FloatingParticles";
 import { ExternalLink, ArrowRight, GraduationCap, Landmark, Building2, Layers } from "lucide-react";
 
 const projects = [
@@ -47,6 +48,7 @@ const projects = [
 const ProjectsSection = () => (
   <section id="projects" className="py-28 bg-background section-divider relative">
     <div className="absolute inset-0 tech-grid-bg opacity-40" />
+    <FloatingParticles count={20} className="opacity-40" />
     <div className="container mx-auto px-4 lg:px-8 relative z-10">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -91,7 +93,7 @@ const ProjectsSection = () => (
             >
               <Wrapper
                 {...linkProps}
-                className="group block bg-card rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-lg hover:border-blue/15 transition-all duration-400 h-full"
+                className="group block bg-card rounded-2xl border border-border overflow-hidden card-glow hover:border-blue/15 transition-all duration-400 h-full"
               >
                 <div className={`h-0.5 w-full bg-gradient-to-r ${gradient}`} />
                 <div className="p-7">

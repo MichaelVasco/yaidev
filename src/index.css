@@ -98,6 +98,24 @@
   .glow-teal {
     box-shadow: 0 0 20px hsl(var(--color-teal) / 0.15), 0 0 40px hsl(var(--color-teal) / 0.05);
   }
+  .hover-glow-blue:hover {
+    box-shadow: 0 0 24px hsl(var(--color-blue) / 0.2), 0 0 48px hsl(var(--color-blue) / 0.08);
+  }
+  .hover-glow-purple:hover {
+    box-shadow: 0 0 24px hsl(var(--color-purple) / 0.2), 0 0 48px hsl(var(--color-purple) / 0.08);
+  }
+  .hover-glow-gradient:hover {
+    box-shadow: 0 0 24px hsl(var(--color-blue) / 0.18), 0 0 48px hsl(var(--color-purple) / 0.1);
+  }
+  .card-glow {
+    box-shadow: 0 0 0 1px hsl(var(--color-blue) / 0.06), 0 0 15px hsl(var(--color-blue) / 0.04);
+  }
+  .card-glow:hover {
+    box-shadow: 0 0 0 1px hsl(var(--color-blue) / 0.15), 0 0 25px hsl(var(--color-blue) / 0.08), 0 0 50px hsl(var(--color-purple) / 0.04);
+  }
+  .icon-glow {
+    filter: drop-shadow(0 0 6px currentColor);
+  }
 }
 
 @layer components {

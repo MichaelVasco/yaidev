@@ -3,6 +3,7 @@ import {
   Globe, Smartphone, Monitor, Gamepad2, Bot, ImageIcon,
   Hexagon, Video, Music, PenTool, Sparkles, ArrowRight
 } from "lucide-react";
+import FloatingParticles from "@/components/FloatingParticles";
 
 const services = [
   { icon: Globe, title: "Websites", description: "High-performance, responsive websites built for speed, SEO, and conversion.", color: "text-blue", bg: "bg-blue/10 group-hover:bg-blue/20" },
@@ -28,6 +29,7 @@ const gradients = [
 const ServicesSection = () => (
   <section id="services" className="py-28 bg-background section-divider relative overflow-hidden">
     <div className="absolute inset-0 tech-grid-bg opacity-30" />
+    <FloatingParticles count={25} className="opacity-50" />
     <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-purple/[0.03] blur-[80px]" />
     <div className="absolute top-0 left-0 w-[400px] h-[400px] rounded-full bg-teal/[0.02] blur-[100px]" />
 
@@ -64,7 +66,7 @@ const ServicesSection = () => (
             viewport={{ once: true }}
             transition={{ delay: i * 0.04, duration: 0.35 }}
             whileHover={{ y: -3 }}
-            className="group relative bg-card rounded-xl border border-border p-5 hover:border-blue/15 hover:shadow-md transition-all duration-300 overflow-hidden"
+            className="group relative bg-card rounded-xl border border-border p-5 hover:border-blue/15 card-glow transition-all duration-300 overflow-hidden"
           >
             <div className={`absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r ${gradients[i % gradients.length]} scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left`} />
 

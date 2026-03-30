@@ -117,7 +117,13 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background ambient glow */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-blue/[0.03] blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-purple/[0.03] blur-[100px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-teal/[0.02] blur-[80px]" />
+      </div>
       {/* Header */}
       <div className="glass fixed top-0 left-0 right-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -185,7 +191,7 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
                     whileHover={{ y: -3 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => handleSelect(value)}
-                    className="group bg-card rounded-xl border border-border p-5 text-left hover:border-primary/30 hover:shadow-md transition-all duration-300"
+                    className="group bg-card rounded-xl border border-border p-5 text-left card-glow hover:border-blue/20 transition-all duration-300"
                   >
                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
                       <Icon size={20} className="text-primary group-hover:text-primary-foreground transition-colors duration-300" />
@@ -221,7 +227,8 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
                 </p>
               </div>
 
-              <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
+              <div className="bg-card rounded-2xl border border-border p-6 card-glow relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue/20 to-transparent" />
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
@@ -238,7 +245,8 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
                     whileTap={{ scale: 0.98 }}
                     onClick={handleBuild}
                     disabled={!prompt.trim()}
-                    className="bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-heading font-semibold text-sm flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
+                    className="px-6 py-2.5 rounded-lg font-heading font-semibold text-sm flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed text-white hover-glow-blue transition-all duration-300"
+                    style={{ background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple)))" }}
                   >
                     <Send size={14} />
                     Build with AI
@@ -272,9 +280,10 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
               </p>
 
               {/* Progress bar */}
-              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden relative">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-primary to-accent rounded-full"
+                  className="h-full rounded-full"
+                  style={{ background: "linear-gradient(90deg, hsl(var(--color-blue)), hsl(var(--color-purple)), hsl(var(--color-cyan)))" }}
                   initial={{ width: "0%" }}
                   animate={{ width: `${progress}%` }}
                   transition={{ duration: 0.3 }}
