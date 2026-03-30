@@ -1,14 +1,14 @@
 import { motion } from "framer-motion";
-import { Users, Bot, ArrowRight } from "lucide-react";
+import { Users, Bot, ArrowRight, Zap, Shield } from "lucide-react";
 
 const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) => (
-  <section id="build-now" className="min-h-[80vh] flex items-center justify-center bg-background relative">
-    <div className="absolute inset-0 opacity-[0.025]" style={{
-      backgroundImage: 'radial-gradient(hsl(var(--primary)) 1px, transparent 1px)',
-      backgroundSize: '28px 28px',
-    }} />
+  <section id="build-now" className="relative overflow-hidden">
+    {/* Background */}
+    <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-secondary/30" />
+    <div className="absolute inset-0 tech-grid-bg opacity-40" />
+    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/[0.03] blur-[100px]" />
 
-    <div className="container mx-auto px-4 py-28 relative z-10">
+    <div className="container mx-auto px-4 lg:px-8 py-32 relative z-10">
       <motion.div
         initial={{ opacity: 0, y: 25 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -24,70 +24,87 @@ const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) =
         >
           Get Started
         </motion.span>
-        <h2 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-foreground">
+        <h2 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-foreground mb-5">
           Build <span className="text-primary">Now</span>
         </h2>
+        <p className="text-muted-foreground max-w-xl mx-auto text-base leading-relaxed">
+          Choose your path — work with our expert team or harness the power of AI to build your next project.
+        </p>
       </motion.div>
 
-      <div className="flex flex-col md:flex-row items-stretch justify-center gap-8 max-w-4xl mx-auto">
+      <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
         {/* Human Experts */}
         <motion.a
           href="https://wa.me/2349047188353?text=Good%20Day%20Yaidev%2C%20I%20need%20a%20technology%20to%20be%20build%20by%20a%20human%20for%20me"
           target="_blank"
           rel="noopener noreferrer"
-          initial={{ opacity: 0, x: -30 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, y: 25 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          whileHover={{ scale: 1.02, y: -4 }}
+          whileHover={{ y: -6 }}
           whileTap={{ scale: 0.98 }}
-          className="flex-1 group bg-primary text-primary-foreground rounded-2xl p-10 md:p-12 flex flex-col items-center justify-center text-center cursor-pointer shadow-lg hover:shadow-2xl transition-shadow duration-400"
+          className="group relative bg-primary text-primary-foreground rounded-2xl p-10 flex flex-col text-center cursor-pointer shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden"
         >
-          <div className="w-16 h-16 rounded-2xl bg-primary-foreground/15 flex items-center justify-center mb-6 group-hover:bg-primary-foreground/25 transition-colors duration-300">
-            <Users size={32} />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary-foreground/[0.06] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          
+          <div className="relative z-10">
+            <div className="w-14 h-14 rounded-2xl bg-primary-foreground/10 flex items-center justify-center mx-auto mb-6 group-hover:bg-primary-foreground/20 transition-colors duration-300">
+              <Users size={28} />
+            </div>
+            <h3 className="text-xl md:text-2xl font-heading font-bold mb-3 leading-snug">
+              Let Our Human Experts Build For You
+            </h3>
+            <p className="text-primary-foreground/65 text-sm leading-relaxed mb-6">
+              Websites · Apps · Software · Games · Bots · Images · Logos · Videos · Audios · Designs · Any Other Thing
+            </p>
+
+            <div className="flex items-center justify-center gap-4 mb-6 text-primary-foreground/40 text-xs">
+              <span className="flex items-center gap-1"><Shield size={12} /> Custom Delivery</span>
+              <span className="flex items-center gap-1"><Zap size={12} /> Expert Team</span>
+            </div>
+
+            <div className="flex items-center justify-center gap-2 text-sm font-semibold text-primary-foreground/90 group-hover:text-primary-foreground transition-colors">
+              <span>Chat on WhatsApp</span>
+              <ArrowRight size={14} className="group-hover:translate-x-1.5 transition-transform duration-300" />
+            </div>
           </div>
-          <h3 className="text-xl md:text-2xl font-heading font-bold mb-4 leading-snug">
-            Let Our Human Experts Build For You
-          </h3>
-          <p className="text-primary-foreground/75 text-sm leading-relaxed">
-            ( Websites / Apps / Softwares / Games / Bots / Images / Logos / Videos / Audios / Designs / Any Other Thing )
-          </p>
-          <div className="mt-6 flex items-center gap-2 text-sm font-medium text-primary-foreground/80 group-hover:text-primary-foreground transition-colors">
-            <span>Get Started</span>
-            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
-          </div>
-          <p className="mt-4 text-primary-foreground/50 text-xs">
-            Speak directly with our human team for custom delivery.
-          </p>
         </motion.a>
 
         {/* AI Build */}
         <motion.button
           onClick={onOpenAiBuilder}
-          initial={{ opacity: 0, x: 30 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, y: 25 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          whileHover={{ scale: 1.02, y: -4 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          whileHover={{ y: -6 }}
           whileTap={{ scale: 0.98 }}
-          className="flex-1 group bg-primary text-primary-foreground rounded-2xl p-10 md:p-12 flex flex-col items-center justify-center text-center cursor-pointer shadow-lg hover:shadow-2xl transition-shadow duration-400"
+          className="group relative bg-primary text-primary-foreground rounded-2xl p-10 flex flex-col text-center cursor-pointer shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden"
         >
-          <div className="w-16 h-16 rounded-2xl bg-primary-foreground/15 flex items-center justify-center mb-6 group-hover:bg-primary-foreground/25 transition-colors duration-300">
-            <Bot size={32} />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary-foreground/[0.06] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          
+          <div className="relative z-10">
+            <div className="w-14 h-14 rounded-2xl bg-primary-foreground/10 flex items-center justify-center mx-auto mb-6 group-hover:bg-primary-foreground/20 transition-colors duration-300">
+              <Bot size={28} />
+            </div>
+            <h3 className="text-xl md:text-2xl font-heading font-bold mb-3 leading-snug">
+              Let AI Build For You
+            </h3>
+            <p className="text-primary-foreground/65 text-sm leading-relaxed mb-6">
+              Websites · Apps · Software · Games · Bots · Images · Logos · Videos · Audios · Designs · Any Other Thing
+            </p>
+
+            <div className="flex items-center justify-center gap-4 mb-6 text-primary-foreground/40 text-xs">
+              <span className="flex items-center gap-1"><Zap size={12} /> Instant</span>
+              <span className="flex items-center gap-1"><Shield size={12} /> AI-Powered</span>
+            </div>
+
+            <div className="flex items-center justify-center gap-2 text-sm font-semibold text-primary-foreground/90 group-hover:text-primary-foreground transition-colors">
+              <span>Open AI Builder</span>
+              <ArrowRight size={14} className="group-hover:translate-x-1.5 transition-transform duration-300" />
+            </div>
           </div>
-          <h3 className="text-xl md:text-2xl font-heading font-bold mb-4 leading-snug">
-            Let AI Build For You
-          </h3>
-          <p className="text-primary-foreground/75 text-sm leading-relaxed">
-            ( Websites / Apps / Softwares / Games / Bots / Images / Logos / Videos / Audios / Designs / Any Other Thing )
-          </p>
-          <div className="mt-6 flex items-center gap-2 text-sm font-medium text-primary-foreground/80 group-hover:text-primary-foreground transition-colors">
-            <span>Get Started</span>
-            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
-          </div>
-          <p className="mt-4 text-primary-foreground/50 text-xs">
-            AI-powered instant creation experience.
-          </p>
         </motion.button>
       </div>
     </div>
