@@ -82,8 +82,8 @@ const AboutSection = () => (
             </div>
 
             {/* Accent corner */}
-            <div className="absolute -bottom-2 -right-2 w-16 h-16 border-b-2 border-r-2 border-primary/30 rounded-br-2xl" />
-            <div className="absolute -top-2 -left-2 w-16 h-16 border-t-2 border-l-2 border-primary/30 rounded-tl-2xl" />
+            <div className="absolute -bottom-2 -right-2 w-16 h-16 border-b-2 border-r-2 border-purple/30 rounded-br-2xl" />
+            <div className="absolute -top-2 -left-2 w-16 h-16 border-t-2 border-l-2 border-blue/30 rounded-tl-2xl" />
           </div>
 
           {/* Founder Info Card */}
