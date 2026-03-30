@@ -186,7 +186,7 @@ const AboutSection = () => (
               { value: "AI-First", label: "Innovation Model" },
             ].map(({ value, label }) => (
               <div key={label} className="text-center">
-                <div className="text-2xl font-heading font-bold text-primary">{value}</div>
+                <div className="text-2xl font-heading font-bold text-blue">{value}</div>
                 <div className="text-xs text-muted-foreground mt-1">{label}</div>
               </div>
             ))}
