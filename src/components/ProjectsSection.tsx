@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import FloatingParticles from "@/components/FloatingParticles";
 import { ExternalLink, ArrowRight, GraduationCap, Landmark, Building2, Layers } from "lucide-react";
 
 const projects = [
