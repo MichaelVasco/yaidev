@@ -37,8 +37,6 @@ const Navbar = () => {
           <a href="#home" className="font-heading text-xl font-bold tracking-tight">
             <span className="text-gradient">YAIDEV</span>
           </a>
-            YAIDEV
-          </a>
 
           <div className="hidden lg:flex items-center gap-1.5">
             {navItems.map((item) => (
