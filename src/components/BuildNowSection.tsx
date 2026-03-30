@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Users, Bot, ArrowRight, Zap, Shield } from "lucide-react";
+import FloatingParticles from "@/components/FloatingParticles";
 
 const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) => (
   <section id="build-now" className="relative overflow-hidden">
