@@ -19,7 +19,7 @@ const services = [
 ];
 
 const ServicesSection = () => (
-  <section id="services" className="py-28 bg-background relative overflow-hidden">
+  <section id="services" className="py-28 bg-background section-divider relative overflow-hidden">
     {/* Subtle background pattern */}
     <div className="absolute inset-0 opacity-[0.02]" style={{
       backgroundImage: 'radial-gradient(hsl(var(--primary)) 1px, transparent 1px)',
