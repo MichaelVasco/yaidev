@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -15,22 +15,36 @@ const navItems = [
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass">
-      <div className="container mx-auto px-4">
+    <motion.nav
+      initial={{ y: -80 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled ? "glass shadow-md" : "bg-transparent"
+      }`}
+    >
+      <div className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <a href="#home" className="font-heading text-xl font-bold text-primary">
+          <a href="#home" className="font-heading text-xl font-bold text-primary tracking-tight">
             YAIDEV
           </a>
 
           {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-2">
+          <div className="hidden lg:flex items-center gap-1.5">
             {navItems.map((item) => (
               <a
                 key={item.label}
                 href={item.href}
-                className="px-4 py-2 rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 hover:shadow-md"
+                className="relative px-4 py-2 rounded-lg text-[13px] font-semibold bg-primary text-primary-foreground hover:bg-primary/85 active:scale-[0.97] transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 {item.label}
               </a>
@@ -40,9 +54,10 @@ const Navbar = () => {
           {/* Mobile toggle */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden p-2 text-foreground"
+            className="lg:hidden p-2 rounded-lg text-foreground hover:bg-muted transition-colors"
+            aria-label="Toggle menu"
           >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
+            {isOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
       </div>
@@ -54,15 +69,16 @@ const Navbar = () => {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="lg:hidden overflow-hidden glass"
+            transition={{ duration: 0.25 }}
+            className="lg:hidden overflow-hidden bg-card/95 backdrop-blur-xl border-t border-border/50"
           >
-            <div className="px-4 py-3 flex flex-wrap gap-2">
+            <div className="px-4 py-4 grid grid-cols-2 gap-2">
               {navItems.map((item) => (
                 <a
                   key={item.label}
                   href={item.href}
                   onClick={() => setIsOpen(false)}
-                  className="px-4 py-2 rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  className="px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-primary text-primary-foreground hover:bg-primary/85 transition-colors text-center"
                 >
                   {item.label}
                 </a>
@@ -71,7 +87,7 @@ const Navbar = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </nav>
+    </motion.nav>
   );
 };
 

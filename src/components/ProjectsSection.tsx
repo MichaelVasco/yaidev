@@ -33,7 +33,7 @@ const projects = [
 ];
 
 const ProjectsSection = () => (
-  <section id="projects" className="py-28 bg-background">
+  <section id="projects" className="py-28 bg-background section-divider">
     <div className="container mx-auto px-4">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
