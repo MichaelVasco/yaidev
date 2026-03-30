@@ -31,7 +31,7 @@ const AboutSection = () => (
           Who We Are
         </motion.span>
         <h2 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-foreground">
-          About <span className="text-primary">Yaidev Corporation</span>
+          About <span className="text-gradient">Yaidev Corporation</span>
         </h2>
       </motion.div>
 
