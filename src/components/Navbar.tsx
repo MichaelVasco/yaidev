@@ -85,23 +85,42 @@ const Navbar = () => {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="lg:hidden overflow-hidden bg-white/90 backdrop-blur-2xl border-b border-border"
+            className="lg:hidden overflow-hidden bg-white/95 backdrop-blur-2xl border-b border-border"
+            style={{ position: "relative", zIndex: 9999 }}
           >
-            <div className="px-4 py-4 grid grid-cols-2 gap-2">
+            <div className="px-4 py-4 flex flex-col gap-1">
               {navItems.map((item) => (
                 <a
                   key={item.label}
                   href={item.href}
-                  onClick={() => setIsOpen(false)}
-                  className="px-4 py-2.5 rounded-lg text-[13px] font-semibold text-muted-foreground hover:text-foreground hover:bg-primary/8 transition-all duration-300 text-center"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsOpen(false);
+                    const target = document.querySelector(item.href);
+                    if (target) {
+                      setTimeout(() => {
+                        target.scrollIntoView({ behavior: "smooth" });
+                      }, 100);
+                    }
+                  }}
+                  className="block w-full px-4 py-3.5 rounded-xl text-sm font-semibold text-muted-foreground active:text-foreground active:bg-primary/10 hover:text-foreground hover:bg-primary/8 transition-all duration-200 text-left touch-manipulation"
                 >
                   {item.label}
                 </a>
               ))}
               <a
                 href="#build-now"
-                onClick={() => setIsOpen(false)}
-                className="col-span-2 mt-1 px-5 py-2.5 rounded-lg text-[13px] font-bold text-primary-foreground text-center bg-primary hover:shadow-lg hover:shadow-blue/20"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsOpen(false);
+                  const target = document.querySelector("#build-now");
+                  if (target) {
+                    setTimeout(() => {
+                      target.scrollIntoView({ behavior: "smooth" });
+                    }, 100);
+                  }
+                }}
+                className="block w-full mt-2 px-5 py-3.5 rounded-xl text-sm font-bold text-primary-foreground text-center bg-primary hover:shadow-lg hover:shadow-blue/20 active:scale-[0.98] transition-all duration-200 touch-manipulation"
               >
                 Build Now
               </a>
