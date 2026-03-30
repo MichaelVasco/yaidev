@@ -56,6 +56,18 @@ export default {
           light: "hsl(var(--brand-light))",
           dark: "hsl(var(--brand-dark))",
         },
+        blue: {
+          DEFAULT: "hsl(var(--color-blue))",
+        },
+        purple: {
+          DEFAULT: "hsl(var(--color-purple))",
+        },
+        teal: {
+          DEFAULT: "hsl(var(--color-teal))",
+        },
+        cyan: {
+          DEFAULT: "hsl(var(--color-cyan))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
