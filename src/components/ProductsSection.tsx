@@ -1,72 +1,108 @@
 import { motion } from "framer-motion";
-import { Globe, Smartphone, Code, Gamepad2, Bot, Palette } from "lucide-react";
+import { Tv, CreditCard, BrainCircuit, ExternalLink, ArrowRight } from "lucide-react";
 
 const products = [
   {
-    icon: Globe,
-    title: "Custom Websites",
-    description: "Responsive, SEO-optimized websites with modern design that convert visitors into customers.",
+    name: "AdsTVAI",
+    icon: Tv,
+    link: "https://adstvai.lovable.app",
+    description:
+      "An innovative platform in the digital advertising and AI space designed to help transform advertising value and intelligent media experiences.",
+    color: "from-primary to-accent",
   },
   {
-    icon: Smartphone,
-    title: "Mobile Applications",
-    description: "Native and cross-platform mobile apps for iOS and Android with seamless user experiences.",
+    name: "Paywithads",
+    icon: CreditCard,
+    link: "https://paywithadspaymentgateway.lovable.app",
+    description:
+      "A payment-focused platform built around innovation in digital transactions, monetization, and next-generation payment accessibility.",
+    color: "from-accent to-primary",
   },
   {
-    icon: Code,
-    title: "Software Solutions",
-    description: "Enterprise-grade software systems, CRMs, ERPs, and custom business tools built to scale.",
-  },
-  {
-    icon: Gamepad2,
-    title: "Games & Interactive",
-    description: "Engaging games and interactive experiences for web, mobile, and desktop platforms.",
-  },
-  {
-    icon: Bot,
-    title: "AI Bots & Automation",
-    description: "Intelligent chatbots, virtual assistants, and workflow automation powered by AI.",
-  },
-  {
-    icon: Palette,
-    title: "UI/UX Design",
-    description: "Beautiful, user-centered designs with intuitive interfaces and premium visual identity.",
+    name: "Yaiver",
+    icon: BrainCircuit,
+    link: "https://yaiver.lovable.app",
+    description:
+      "An AI-powered technology creation platform focused on helping users build digital solutions faster, smarter, and more efficiently.",
+    color: "from-primary via-accent to-brand-dark",
   },
 ];
 
 const ProductsSection = () => (
-  <section id="products" className="py-24 bg-secondary/50">
+  <section id="products" className="py-28 bg-secondary/50">
     <div className="container mx-auto px-4">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="text-center mb-16"
+        className="text-center mb-20"
       >
-        <h2 className="text-4xl md:text-5xl font-heading font-bold text-foreground mb-4">
+        <motion.span
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2 }}
+          className="text-xs font-medium tracking-[0.25em] uppercase text-primary mb-4 block"
+        >
+          What We Build
+        </motion.span>
+        <h2 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-foreground mb-6">
           Our <span className="text-primary">Products</span>
         </h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-          We build digital products that empower businesses and delight users.
+        <p className="text-muted-foreground max-w-3xl mx-auto text-lg leading-relaxed">
+          Yaidev Corporation builds and owns forward-looking technology products designed to serve
+          individuals, businesses, and the future of digital commerce, media, AI, and intelligent
+          automation.
         </p>
       </motion.div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map(({ icon: Icon, title, description }, i) => (
-          <motion.div
-            key={title}
-            initial={{ opacity: 0, y: 20 }}
+      <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        {products.map(({ name, icon: Icon, link, description, color }, i) => (
+          <motion.a
+            key={name}
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            initial={{ opacity: 0, y: 25 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: i * 0.1 }}
-            className="bg-card rounded-xl p-8 border border-border hover:border-primary/30 hover:shadow-lg transition-all duration-300 group"
+            transition={{ delay: i * 0.15, duration: 0.5 }}
+            whileHover={{ y: -6 }}
+            className="group relative bg-card rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-500 flex flex-col"
           >
-            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
-              <Icon className="text-primary" size={24} />
+            {/* Top gradient accent */}
+            <div className={`h-1.5 w-full bg-gradient-to-r ${color}`} />
+
+            <div className="p-8 flex flex-col flex-1">
+              {/* Icon */}
+              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors duration-300">
+                <Icon className="text-primary" size={26} />
+              </div>
+
+              {/* Name */}
+              <h3 className="text-2xl font-heading font-bold text-foreground mb-3 flex items-center gap-2">
+                {name}
+                <ExternalLink
+                  size={16}
+                  className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                />
+              </h3>
+
+              {/* Description */}
+              <p className="text-muted-foreground leading-relaxed text-[15px] flex-1">
+                {description}
+              </p>
+
+              {/* CTA */}
+              <div className="mt-6 pt-5 border-t border-border flex items-center gap-2 text-primary text-sm font-medium">
+                <span>Visit Product</span>
+                <ArrowRight
+                  size={14}
+                  className="group-hover:translate-x-1 transition-transform duration-300"
+                />
+              </div>
             </div>
-            <h3 className="text-xl font-heading font-semibold text-foreground mb-3">{title}</h3>
-            <p className="text-muted-foreground leading-relaxed">{description}</p>
-          </motion.div>
+          </motion.a>
         ))}
       </div>
     </div>
