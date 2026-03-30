@@ -36,7 +36,7 @@ const Footer = () => (
       {/* Main footer grid */}
       <div className="py-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
         <div className="lg:col-span-1">
-          <h4 className="font-heading text-xl font-bold text-foreground mb-4 tracking-tight">YAIDEV</h4>
+          <h4 className="font-heading text-xl font-bold mb-4 tracking-tight"><span className="text-gradient">YAIDEV</span></h4>
           <p className="text-muted-foreground text-sm leading-relaxed mb-6">
             A global technology corporation building intelligent digital solutions for businesses and individuals worldwide.
           </p>
