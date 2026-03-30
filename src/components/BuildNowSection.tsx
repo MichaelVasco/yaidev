@@ -21,12 +21,12 @@ const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) =
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="text-xs font-medium tracking-[0.25em] uppercase text-primary mb-4 block"
+          className="text-xs font-medium tracking-[0.25em] uppercase text-blue mb-4 block"
         >
           Get Started
         </motion.span>
         <h2 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-foreground mb-5">
-          Build <span className="text-primary">Now</span>
+          Build <span className="text-gradient">Now</span>
         </h2>
         <p className="text-muted-foreground max-w-xl mx-auto text-base leading-relaxed">
           Choose your path — work with our expert team or harness the power of AI to build your next project.
@@ -47,11 +47,11 @@ const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) =
           whileTap={{ scale: 0.98 }}
           className="group relative bg-card rounded-2xl border border-border p-10 flex flex-col text-center cursor-pointer card-glow hover:border-blue/20 transition-all duration-500 overflow-hidden"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           
           <div className="relative z-10">
-            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors duration-300">
-              <Users size={28} className="text-primary" />
+            <div className="w-14 h-14 rounded-2xl bg-blue/10 flex items-center justify-center mx-auto mb-6 group-hover:bg-blue/20 transition-colors duration-300">
+              <Users size={28} className="text-blue" />
             </div>
             <h3 className="text-xl md:text-2xl font-heading font-bold text-foreground mb-3 leading-snug">
               Let Our Human Experts Build For You
@@ -65,7 +65,7 @@ const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) =
               <span className="flex items-center gap-1"><Zap size={12} /> Expert Team</span>
             </div>
 
-            <div className="flex items-center justify-center gap-2 text-sm font-semibold text-primary group-hover:gap-3 transition-all">
+            <div className="flex items-center justify-center gap-2 text-sm font-semibold text-blue group-hover:gap-3 transition-all">
               <span>Chat on WhatsApp</span>
               <ArrowRight size={14} />
             </div>
@@ -83,11 +83,11 @@ const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) =
           whileTap={{ scale: 0.98 }}
           className="group relative bg-card rounded-2xl border border-border p-10 flex flex-col text-center cursor-pointer card-glow hover:border-purple/20 transition-all duration-500 overflow-hidden"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-br from-purple/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           
           <div className="relative z-10">
-            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors duration-300">
-              <Bot size={28} className="text-primary" />
+            <div className="w-14 h-14 rounded-2xl bg-purple/10 flex items-center justify-center mx-auto mb-6 group-hover:bg-purple/20 transition-colors duration-300">
+              <Bot size={28} className="text-purple" />
             </div>
             <h3 className="text-xl md:text-2xl font-heading font-bold text-foreground mb-3 leading-snug">
               Let AI Build For You
@@ -101,7 +101,7 @@ const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) =
               <span className="flex items-center gap-1"><Shield size={12} /> AI-Powered</span>
             </div>
 
-            <div className="flex items-center justify-center gap-2 text-sm font-semibold text-primary group-hover:gap-3 transition-all">
+            <div className="flex items-center justify-center gap-2 text-sm font-semibold text-purple group-hover:gap-3 transition-all">
               <span>Open AI Builder</span>
               <ArrowRight size={14} />
             </div>
