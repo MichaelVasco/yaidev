@@ -33,7 +33,9 @@ const BuildNowSection = () => (
       <div className="flex flex-col md:flex-row items-stretch justify-center gap-8 max-w-4xl mx-auto">
         {/* Human Experts */}
         <motion.a
-          href="#contact"
+          href="https://wa.me/2349047188353?text=Good%20Day%20Yaidev%2C%20I%20need%20a%20technology%20to%20be%20build%20by%20a%20human%20for%20me"
+          target="_blank"
+          rel="noopener noreferrer"
           initial={{ opacity: 0, x: -30 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
@@ -55,6 +57,9 @@ const BuildNowSection = () => (
             <span>Get Started</span>
             <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
           </div>
+          <p className="mt-4 text-primary-foreground/50 text-xs">
+            Speak directly with our human team for custom delivery.
+          </p>
         </motion.a>
 
         {/* AI Build */}
