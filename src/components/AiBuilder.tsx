@@ -5,8 +5,10 @@ import {
   Globe, Smartphone, Monitor, Gamepad2, Bot, ImageIcon,
   Hexagon, Video, Music, PenTool, Wand2,
   FileCode, FolderTree, Database, Layout, Server, Palette,
-  Download, Share2, Copy, RotateCcw
+  Download, Share2, Copy, RotateCcw, Crown, Coins
 } from "lucide-react";
+import { useCredits } from "@/hooks/use-credits";
+import PaywallModal from "@/components/PaywallModal";
 
 const categories = [
   { value: "websites", label: "Websites", icon: Globe },
@@ -74,6 +76,12 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
   const [prompt, setPrompt] = useState("");
   const [phase, setPhase] = useState<"select" | "prompt" | "loading" | "result">("select");
   const [progress, setProgress] = useState(0);
+  const [showPaywall, setShowPaywall] = useState(false);
+
+  const {
+    credits, vip, accessStatus, canUse, useCredit,
+    pending, activateVip, submitPayment, grantAccess,
+  } = useCredits();
 
   const selectedCat = categories.find((c) => c.value === category);
   const isDev = category && devCategories.includes(category);
@@ -85,6 +93,15 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
 
   const handleBuild = () => {
     if (!prompt.trim()) return;
+    if (!canUse) {
+      setShowPaywall(true);
+      return;
+    }
+    const ok = useCredit();
+    if (!ok) {
+      setShowPaywall(true);
+      return;
+    }
     setPhase("loading");
     setProgress(0);
     const steps = [10, 25, 40, 55, 70, 85, 95, 100];
@@ -103,13 +120,40 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="glass fixed top-0 left-0 right-0 z-50">
-        <div className="container mx-auto px-4 h-16 flex items-center gap-4">
-          <button onClick={onBack} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft size={16} /> Back
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button onClick={onBack} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft size={16} /> Back
+            </button>
+            <div className="h-5 w-px bg-border" />
+            <span className="font-heading font-bold text-primary text-sm">YAIDEV</span>
+            <span className="text-muted-foreground text-sm">/ AI Builder</span>
+          </div>
+
+          {/* Credits badge */}
+          <button
+            onClick={() => setShowPaywall(true)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card hover:border-primary/30 transition-colors text-sm"
+          >
+            {vip ? (
+              <>
+                <Crown size={14} className="text-primary" />
+                <span className="font-medium text-primary">VIP</span>
+              </>
+            ) : accessStatus === "subscribed" ? (
+              <>
+                <Sparkles size={14} className="text-primary" />
+                <span className="font-medium text-primary">Pro</span>
+              </>
+            ) : (
+              <>
+                <Coins size={14} className={credits > 5 ? "text-primary" : "text-destructive"} />
+                <span className={`font-medium ${credits > 5 ? "text-foreground" : "text-destructive"}`}>
+                  {credits} credits
+                </span>
+              </>
+            )}
           </button>
-          <div className="h-5 w-px bg-border" />
-          <span className="font-heading font-bold text-primary text-sm">YAIDEV</span>
-          <span className="text-muted-foreground text-sm">/ AI Builder</span>
         </div>
       </div>
 
@@ -404,6 +448,16 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
           )}
         </AnimatePresence>
       </div>
+
+      <PaywallModal
+        open={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        accessStatus={accessStatus}
+        credits={credits}
+        pending={pending}
+        onActivateVip={activateVip}
+        onSubmitPayment={submitPayment}
+      />
     </div>
   );
 };
