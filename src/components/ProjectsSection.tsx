@@ -48,6 +48,7 @@ const projects = [
 const ProjectsSection = () => (
   <section id="projects" className="py-28 bg-background section-divider relative">
     <div className="absolute inset-0 tech-grid-bg opacity-40" />
+    <FloatingParticles count={20} className="opacity-40" />
     <div className="container mx-auto px-4 lg:px-8 relative z-10">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
