@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import FloatingParticles from "@/components/FloatingParticles";
 import {
@@ -23,6 +23,17 @@ const floatingIcons = [
 
 const Hero = () => {
   const [entered, setEntered] = useState(false);
+
+  useEffect(() => {
+    if (!entered) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setEntered(false); },
+      { threshold: 0.5 }
+    );
+    const el = document.getElementById("home");
+    if (el) observer.observe(el);
+    return () => observer.disconnect();
+  }, [entered]);
 
   const handleEnter = () => {
     setEntered(true);
