@@ -28,7 +28,7 @@ const FloatingParticles = ({ count = 40, className = "" }: { count?: number; cla
     };
     resize();
 
-    const hues = [217, 263, 168, 191]; // blue, purple, teal, cyan
+    const hues = [217, 230, 200]; // blue shades
 
     particles.current = Array.from({ length: count }, () => ({
       x: Math.random() * canvas.offsetWidth,
@@ -36,7 +36,7 @@ const FloatingParticles = ({ count = 40, className = "" }: { count?: number; cla
       vx: (Math.random() - 0.5) * 0.3,
       vy: (Math.random() - 0.5) * 0.3,
       size: Math.random() * 2 + 0.5,
-      opacity: Math.random() * 0.3 + 0.05,
+      opacity: Math.random() * 0.2 + 0.05,
       hue: hues[Math.floor(Math.random() * hues.length)],
     }));
 
@@ -55,11 +55,10 @@ const FloatingParticles = ({ count = 40, className = "" }: { count?: number; cla
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue}, 80%, 60%, ${p.opacity})`;
+        ctx.fillStyle = `hsla(${p.hue}, 80%, 55%, ${p.opacity})`;
         ctx.fill();
       }
 
-      // Draw faint connections
       for (let i = 0; i < particles.current.length; i++) {
         for (let j = i + 1; j < particles.current.length; j++) {
           const a = particles.current[i];
@@ -71,7 +70,7 @@ const FloatingParticles = ({ count = 40, className = "" }: { count?: number; cla
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
             ctx.lineTo(b.x, b.y);
-            ctx.strokeStyle = `hsla(${a.hue}, 70%, 55%, ${0.04 * (1 - dist / 120)})`;
+            ctx.strokeStyle = `hsla(${a.hue}, 70%, 55%, ${0.03 * (1 - dist / 120)})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }

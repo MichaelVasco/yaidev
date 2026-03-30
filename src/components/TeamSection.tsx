@@ -12,11 +12,8 @@ const executives = [
   { name: "Name Withheld", title: "Country Manager", location: "Nigeria", isCeo: false },
 ];
 
-const iconColors = ["text-blue", "text-purple", "text-teal", "text-cyan", "text-blue", "text-purple"];
-const bgColors = ["bg-blue/10", "bg-purple/10", "bg-teal/10", "bg-cyan/10", "bg-blue/10", "bg-purple/10"];
-
 const TeamSection = () => (
-  <section id="team" className="py-28 bg-secondary/30 section-divider">
+  <section id="team" className="py-28 section-divider" style={{ background: "linear-gradient(180deg, hsl(214 40% 96%), hsl(210 40% 98%))" }}>
     <div className="container mx-auto px-4 lg:px-8">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -29,7 +26,7 @@ const TeamSection = () => (
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="text-xs font-medium tracking-[0.25em] uppercase text-blue mb-4 block"
+          className="text-xs font-medium tracking-[0.25em] uppercase text-primary mb-4 block"
         >
           Leadership
         </motion.span>
@@ -48,11 +45,11 @@ const TeamSection = () => (
         viewport={{ once: true }}
         className="max-w-2xl mx-auto mb-14"
       >
-        <div className="relative bg-card rounded-2xl border border-blue/15 overflow-hidden shadow-lg group hover:shadow-xl hover:shadow-blue/5 transition-all duration-500">
+        <div className="relative bg-white rounded-2xl border border-primary/15 overflow-hidden shadow-lg group hover:shadow-xl hover:shadow-blue/5 transition-all duration-500">
           <div className="h-1 w-full bg-gradient-to-r from-blue via-purple to-cyan" />
           <div className="p-8 sm:p-10 flex flex-col sm:flex-row items-center gap-8">
             <div className="relative flex-shrink-0">
-              <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl overflow-hidden ring-2 ring-blue/20 ring-offset-4 ring-offset-card">
+              <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl overflow-hidden ring-2 ring-primary/20 ring-offset-4 ring-offset-white">
                 <img
                   src={founderImg}
                   alt="Iregbu MichaelVasco — Founder, Chairman & CEO"
@@ -60,7 +57,7 @@ const TeamSection = () => (
                   loading="lazy"
                 />
               </div>
-              <div className="absolute -top-1.5 -right-1.5 w-8 h-8 rounded-full bg-gradient-to-br from-blue to-purple flex items-center justify-center shadow-lg shadow-blue/30">
+              <div className="absolute -top-1.5 -right-1.5 w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-blue/20">
                 <Crown size={14} className="text-white" />
               </div>
             </div>
@@ -68,7 +65,7 @@ const TeamSection = () => (
               <h3 className="text-2xl font-heading font-bold text-foreground tracking-tight">
                 Iregbu MichaelVasco
               </h3>
-              <p className="text-blue font-semibold text-sm mt-1">Founder, Chairman & CEO</p>
+              <p className="text-primary font-semibold text-sm mt-1">Founder, Chairman & CEO</p>
               <div className="flex items-center justify-center sm:justify-start gap-1.5 mt-3 text-muted-foreground text-sm">
                 <MapPin size={13} />
                 <span>San Francisco, CA</span>
@@ -91,17 +88,17 @@ const TeamSection = () => (
             viewport={{ once: true }}
             transition={{ delay: i * 0.07, duration: 0.4 }}
             whileHover={{ y: -3 }}
-            className="group bg-card rounded-xl border border-border p-6 hover:border-blue/15 hover:shadow-md transition-all duration-400"
+            className="group bg-white rounded-xl border border-border p-6 hover:border-primary/15 hover:shadow-md hover:shadow-blue/5 transition-all duration-400"
           >
-            <div className={`w-12 h-12 rounded-xl ${bgColors[i]} flex items-center justify-center mb-4 group-hover:scale-105 transition-all duration-300`}>
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-105 transition-all duration-300">
               {title === "Global President" ? (
-                <Globe2 size={20} className={iconColors[i]} />
+                <Globe2 size={20} className="text-primary" />
               ) : (
-                <User size={20} className={iconColors[i]} />
+                <User size={20} className="text-primary" />
               )}
             </div>
             <h4 className="font-heading font-bold text-foreground text-base">{name}</h4>
-            <p className={`${iconColors[i]} text-sm font-medium mt-0.5`}>{title}</p>
+            <p className="text-primary text-sm font-medium mt-0.5">{title}</p>
             <div className="flex items-center gap-1.5 mt-2.5 text-muted-foreground text-xs">
               <MapPin size={11} />
               <span>{location}</span>

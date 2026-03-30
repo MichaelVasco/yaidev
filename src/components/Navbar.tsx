@@ -30,7 +30,7 @@ const Navbar = () => {
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? "bg-background/60 backdrop-blur-2xl border-b border-primary/10 shadow-[0_1px_20px_hsl(var(--color-blue)/0.08),0_1px_3px_hsl(var(--color-purple)/0.06)]"
+          ? "bg-white/80 backdrop-blur-2xl border-b border-border shadow-sm"
           : "bg-transparent"
       }`}
     >
@@ -40,9 +40,9 @@ const Navbar = () => {
             <img
               src={yaidevLogo}
               alt="YAIDEV"
-              className="h-9 sm:h-10 w-auto object-contain rounded-md transition-all duration-300 group-hover:drop-shadow-[0_0_10px_hsl(var(--color-blue)/0.5)] group-hover:brightness-110"
+              className="h-9 sm:h-10 w-auto object-contain rounded-md transition-all duration-300 group-hover:drop-shadow-[0_0_10px_hsl(var(--color-blue)/0.4)]"
             />
-            <span className="font-heading text-lg sm:text-xl font-bold tracking-tight text-gradient transition-all duration-300 group-hover:drop-shadow-[0_0_8px_hsl(var(--color-blue)/0.5)]">
+            <span className="font-heading text-lg sm:text-xl font-bold tracking-tight text-gradient transition-all duration-300">
               YAIDEV
             </span>
           </a>
@@ -56,19 +56,15 @@ const Navbar = () => {
               >
                 <span className="relative z-10">{item.label}</span>
                 <span className="absolute inset-0 rounded-lg bg-primary/0 group-hover:bg-primary/8 transition-all duration-300" />
-                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-0 h-[2px] rounded-full bg-gradient-to-r from-primary to-accent group-hover:w-6 transition-all duration-300" />
+                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-0 h-[2px] rounded-full bg-primary group-hover:w-6 transition-all duration-300" />
               </a>
             ))}
 
             <a
               href="#build-now"
-              className="relative ml-3 px-5 py-2 rounded-lg text-[13px] font-bold text-primary-foreground overflow-hidden transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] hover:shadow-[0_0_20px_hsl(var(--color-blue)/0.3),0_0_40px_hsl(var(--color-purple)/0.15)]"
-              style={{
-                background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple)))",
-              }}
+              className="relative ml-3 px-5 py-2 rounded-lg text-[13px] font-bold text-primary-foreground overflow-hidden transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] hover:shadow-lg hover:shadow-blue/20 bg-primary"
             >
               <span className="relative z-10">Build Now</span>
-              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-700" />
             </a>
           </div>
 
@@ -89,7 +85,7 @@ const Navbar = () => {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="lg:hidden overflow-hidden bg-background/70 backdrop-blur-2xl border-b border-primary/10"
+            className="lg:hidden overflow-hidden bg-white/90 backdrop-blur-2xl border-b border-border"
           >
             <div className="px-4 py-4 grid grid-cols-2 gap-2">
               {navItems.map((item) => (
@@ -105,10 +101,7 @@ const Navbar = () => {
               <a
                 href="#build-now"
                 onClick={() => setIsOpen(false)}
-                className="col-span-2 mt-1 px-5 py-2.5 rounded-lg text-[13px] font-bold text-primary-foreground text-center hover:shadow-[0_0_20px_hsl(var(--color-blue)/0.3)]"
-                style={{
-                  background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple)))",
-                }}
+                className="col-span-2 mt-1 px-5 py-2.5 rounded-lg text-[13px] font-bold text-primary-foreground text-center bg-primary hover:shadow-lg hover:shadow-blue/20"
               >
                 Build Now
               </a>

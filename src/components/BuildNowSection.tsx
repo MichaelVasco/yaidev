@@ -3,11 +3,10 @@ import { Users, Bot, ArrowRight, Zap, Shield } from "lucide-react";
 import FloatingParticles from "@/components/FloatingParticles";
 
 const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) => (
-  <section id="build-now" className="relative overflow-hidden">
-    <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/30 to-background" />
+  <section id="build-now" className="relative overflow-hidden" style={{ background: "linear-gradient(180deg, hsl(214 40% 96%), hsl(210 40% 98%), hsl(214 40% 96%))" }}>
     <div className="absolute inset-0 tech-grid-bg opacity-40" />
-    <FloatingParticles count={30} className="opacity-40" />
-    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-blue/[0.04] blur-[100px]" />
+    <FloatingParticles count={30} className="opacity-30" />
+    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-blue/[0.05] blur-[100px]" />
 
     <div className="container mx-auto px-4 lg:px-8 py-32 relative z-10">
       <motion.div
@@ -21,7 +20,7 @@ const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) =
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="text-xs font-medium tracking-[0.25em] uppercase text-blue mb-4 block"
+          className="text-xs font-medium tracking-[0.25em] uppercase text-primary mb-4 block"
         >
           Get Started
         </motion.span>
@@ -45,13 +44,13 @@ const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) =
           transition={{ duration: 0.5 }}
           whileHover={{ y: -6 }}
           whileTap={{ scale: 0.98 }}
-          className="group relative bg-card rounded-2xl border border-border p-10 flex flex-col text-center cursor-pointer card-glow hover:border-blue/20 transition-all duration-500 overflow-hidden"
+          className="group relative bg-white rounded-2xl border border-border p-10 flex flex-col text-center cursor-pointer shadow-sm hover:shadow-lg hover:shadow-blue/8 hover:border-primary/20 transition-all duration-500 overflow-hidden"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-blue/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           
           <div className="relative z-10">
-            <div className="w-14 h-14 rounded-2xl bg-blue/10 flex items-center justify-center mx-auto mb-6 group-hover:bg-blue/20 transition-colors duration-300">
-              <Users size={28} className="text-blue" />
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/15 transition-colors duration-300">
+              <Users size={28} className="text-primary" />
             </div>
             <h3 className="text-xl md:text-2xl font-heading font-bold text-foreground mb-3 leading-snug">
               Let Our Human Experts Build For You
@@ -65,7 +64,7 @@ const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) =
               <span className="flex items-center gap-1"><Zap size={12} /> Expert Team</span>
             </div>
 
-            <div className="flex items-center justify-center gap-2 text-sm font-semibold text-blue group-hover:gap-3 transition-all">
+            <div className="flex items-center justify-center gap-2 text-sm font-semibold text-primary group-hover:gap-3 transition-all">
               <span>Chat on WhatsApp</span>
               <ArrowRight size={14} />
             </div>
@@ -81,13 +80,13 @@ const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) =
           transition={{ duration: 0.5, delay: 0.1 }}
           whileHover={{ y: -6 }}
           whileTap={{ scale: 0.98 }}
-          className="group relative bg-card rounded-2xl border border-border p-10 flex flex-col text-center cursor-pointer card-glow hover:border-purple/20 transition-all duration-500 overflow-hidden"
+          className="group relative bg-white rounded-2xl border border-border p-10 flex flex-col text-center cursor-pointer shadow-sm hover:shadow-lg hover:shadow-blue/8 hover:border-primary/20 transition-all duration-500 overflow-hidden"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-purple/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-br from-purple/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           
           <div className="relative z-10">
-            <div className="w-14 h-14 rounded-2xl bg-purple/10 flex items-center justify-center mx-auto mb-6 group-hover:bg-purple/20 transition-colors duration-300">
-              <Bot size={28} className="text-purple" />
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/15 transition-colors duration-300">
+              <Bot size={28} className="text-primary" />
             </div>
             <h3 className="text-xl md:text-2xl font-heading font-bold text-foreground mb-3 leading-snug">
               Let AI Build For You
@@ -101,7 +100,7 @@ const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) =
               <span className="flex items-center gap-1"><Shield size={12} /> AI-Powered</span>
             </div>
 
-            <div className="flex items-center justify-center gap-2 text-sm font-semibold text-purple group-hover:gap-3 transition-all">
+            <div className="flex items-center justify-center gap-2 text-sm font-semibold text-primary group-hover:gap-3 transition-all">
               <span>Open AI Builder</span>
               <ArrowRight size={14} />
             </div>
