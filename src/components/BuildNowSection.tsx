@@ -6,7 +6,8 @@ const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) =
   <section id="build-now" className="relative overflow-hidden">
     <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/30 to-background" />
     <div className="absolute inset-0 tech-grid-bg opacity-40" />
-    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/[0.04] blur-[100px]" />
+    <FloatingParticles count={30} className="opacity-40" />
+    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-blue/[0.04] blur-[100px]" />
 
     <div className="container mx-auto px-4 lg:px-8 py-32 relative z-10">
       <motion.div
