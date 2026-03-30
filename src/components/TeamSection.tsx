@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Crown, Globe2, MapPin, User, Linkedin } from "lucide-react";
+import { Crown, Globe2, MapPin, User } from "lucide-react";
 import founderImg from "@/assets/founder.jpg";
 
 const executives = [
