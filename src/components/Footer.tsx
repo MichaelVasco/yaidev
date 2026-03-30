@@ -1,4 +1,5 @@
 import { MessageCircle, Mail, Phone, Globe2, ArrowRight } from "lucide-react";
+import yaidevLogo from "@/assets/yaidev-logo.jfif";
 
 const footerLinks = [
   { label: "Home", href: "#home" },
