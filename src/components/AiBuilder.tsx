@@ -5,8 +5,10 @@ import {
   Globe, Smartphone, Monitor, Gamepad2, Bot, ImageIcon,
   Hexagon, Video, Music, PenTool, Wand2,
   FileCode, FolderTree, Database, Layout, Server, Palette,
-  Download, Share2, Copy, RotateCcw
+  Download, Share2, Copy, RotateCcw, Crown, Coins
 } from "lucide-react";
+import { useCredits } from "@/hooks/use-credits";
+import PaywallModal from "@/components/PaywallModal";
 
 const categories = [
   { value: "websites", label: "Websites", icon: Globe },
