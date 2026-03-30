@@ -151,20 +151,20 @@ const ContactSection = () => {
                   <div className="grid sm:grid-cols-2 gap-4">
                     <input
                       type="text" placeholder="Your Name" required value={form.name} onChange={update("name")}
-                      className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-blue/30 text-sm transition-all"
+                      className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 text-sm transition-all"
                     />
                     <input
                       type="email" placeholder="Your Email" required value={form.email} onChange={update("email")}
-                      className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-purple/30 text-sm transition-all"
+                      className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 text-sm transition-all"
                     />
                   </div>
                   <input
                     type="text" placeholder="Subject" required value={form.subject} onChange={update("subject")}
-                    className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-teal/30 text-sm transition-all"
+                    className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 text-sm transition-all"
                   />
                   <textarea
                     placeholder="Your Message" rows={5} required value={form.message} onChange={update("message")}
-                    className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-cyan/30 text-sm transition-all resize-none"
+                    className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 text-sm transition-all resize-none"
                   />
                   <motion.button
                     type="submit"
