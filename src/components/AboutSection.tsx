@@ -26,7 +26,7 @@ const AboutSection = () => (
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="text-xs font-medium tracking-[0.25em] uppercase text-primary mb-4 block"
+          className="text-xs font-medium tracking-[0.25em] uppercase text-blue mb-4 block"
         >
           Who We Are
         </motion.span>
