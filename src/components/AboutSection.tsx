@@ -70,7 +70,7 @@ const AboutSection = () => (
         >
           <div className="relative group">
             {/* Decorative frame */}
-            <div className="absolute -inset-3 rounded-2xl border-2 border-primary/10 -z-10 group-hover:border-primary/25 transition-colors duration-500" />
+            <div className="absolute -inset-3 rounded-2xl border-2 border-blue/10 -z-10 group-hover:border-blue/25 transition-colors duration-500" />
             <div className="absolute -inset-6 rounded-3xl border border-border/50 -z-20" />
 
             <div className="w-72 md:w-80 aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl">
