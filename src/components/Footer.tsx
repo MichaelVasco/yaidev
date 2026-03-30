@@ -26,7 +26,8 @@ const Footer = () => (
         </div>
         <a
           href="#contact"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-sm hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-heading font-semibold text-sm hover:shadow-lg hover:shadow-blue/20 transition-all duration-300"
+          style={{ background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple)))" }}
         >
           Get Started <ArrowRight size={14} />
         </a>
