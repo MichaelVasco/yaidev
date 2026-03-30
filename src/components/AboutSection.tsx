@@ -102,7 +102,7 @@ const AboutSection = () => (
                 <h4 className="font-heading font-bold text-foreground text-lg leading-tight">
                   Iregbu MichaelVasco
                 </h4>
-                <p className="text-primary text-sm font-medium">
+                <p className="text-blue text-sm font-medium">
                   Founder, Chairman & CEO
                 </p>
               </div>
