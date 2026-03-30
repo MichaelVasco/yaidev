@@ -83,11 +83,11 @@
     background-image: linear-gradient(135deg, hsl(var(--color-purple)), hsl(var(--color-cyan)));
   }
   .glass {
-    background: hsla(222, 40%, 8%, 0.70);
+    background: hsla(220, 28%, 14%, 0.75);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid hsl(222 25% 16% / 0.6);
-    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.3);
+    border-bottom: 1px solid hsl(220 22% 24% / 0.6);
+    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.2);
   }
   .glow-blue {
     box-shadow: 0 0 20px hsl(var(--color-blue) / 0.15), 0 0 40px hsl(var(--color-blue) / 0.05);
