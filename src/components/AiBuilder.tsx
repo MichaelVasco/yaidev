@@ -245,7 +245,8 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
                     whileTap={{ scale: 0.98 }}
                     onClick={handleBuild}
                     disabled={!prompt.trim()}
-                    className="bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-heading font-semibold text-sm flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
+                    className="px-6 py-2.5 rounded-lg font-heading font-semibold text-sm flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed text-white hover-glow-blue transition-all duration-300"
+                    style={{ background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple)))" }}
                   >
                     <Send size={14} />
                     Build with AI
