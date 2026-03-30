@@ -10,7 +10,8 @@ const highlights = [
 ];
 
 const AboutSection = () => (
-  <section id="about" className="py-28 bg-background">
+  <section id="about" className="py-28 bg-background section-divider relative">
+    <div className="absolute inset-0 tech-grid-bg opacity-50" />
     <div className="container mx-auto px-4">
       {/* Section Header */}
       <motion.div
