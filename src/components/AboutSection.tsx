@@ -52,7 +52,7 @@ const AboutSection = () => (
             transition={{ delay: i * 0.1 }}
             className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-border bg-card text-sm text-muted-foreground"
           >
-            <Icon size={16} className="text-primary" />
+            <Icon size={16} className={["text-blue", "text-purple", "text-teal", "text-cyan"][i]} />
             {label}
           </motion.div>
         ))}
