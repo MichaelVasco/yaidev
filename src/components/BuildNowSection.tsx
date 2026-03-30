@@ -45,7 +45,7 @@ const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) =
           transition={{ duration: 0.5 }}
           whileHover={{ y: -6 }}
           whileTap={{ scale: 0.98 }}
-          className="group relative bg-card rounded-2xl border border-border p-10 flex flex-col text-center cursor-pointer hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 overflow-hidden"
+          className="group relative bg-card rounded-2xl border border-border p-10 flex flex-col text-center cursor-pointer card-glow hover:border-blue/20 transition-all duration-500 overflow-hidden"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           
