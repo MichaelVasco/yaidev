@@ -70,10 +70,11 @@ const Navbar = () => {
 
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden p-2 rounded-lg text-foreground hover:bg-muted transition-colors"
+            className="lg:hidden p-3 -mr-1 rounded-lg text-foreground hover:bg-muted active:bg-muted/80 transition-colors touch-manipulation"
             aria-label="Toggle menu"
+            type="button"
           >
-            {isOpen ? <X size={22} /> : <Menu size={22} />}
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
