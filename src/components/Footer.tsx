@@ -37,7 +37,10 @@ const Footer = () => (
       {/* Main footer grid */}
       <div className="py-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
         <div className="lg:col-span-1">
-          <h4 className="font-heading text-xl font-bold mb-4 tracking-tight"><span className="text-gradient">YAIDEV</span></h4>
+          <div className="flex items-center gap-2 mb-4">
+            <img src={yaidevLogo} alt="YAIDEV" className="h-9 w-auto object-contain rounded-md" />
+            <span className="font-heading text-xl font-bold tracking-tight text-gradient">YAIDEV</span>
+          </div>
           <p className="text-muted-foreground text-sm leading-relaxed mb-6">
             A global technology corporation building intelligent digital solutions for businesses and individuals worldwide.
           </p>

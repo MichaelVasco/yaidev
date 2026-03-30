@@ -36,10 +36,12 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <a href="#home" className="font-heading text-xl font-bold tracking-tight group">
-            <span className="text-gradient transition-all duration-300 group-hover:drop-shadow-[0_0_8px_hsl(var(--color-blue)/0.5)]">
-              YAIDEV
-            </span>
+          <a href="#home" className="group flex items-center gap-2 shrink-0">
+            <img
+              src={yaidevLogo}
+              alt="YAIDEV"
+              className="h-9 sm:h-10 w-auto object-contain rounded-md transition-all duration-300 group-hover:drop-shadow-[0_0_10px_hsl(var(--color-blue)/0.5)] group-hover:brightness-110"
+            />
           </a>
 
           <div className="hidden lg:flex items-center gap-1">
