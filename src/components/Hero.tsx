@@ -37,6 +37,7 @@ const Hero = () => {
       className="min-h-screen flex flex-col items-center justify-center bg-background relative overflow-hidden"
     >
       <div className="absolute inset-0 tech-grid-bg" />
+      <FloatingParticles count={50} />
 
       {/* Multi-color gradient orbs */}
       <div className="absolute top-1/4 -left-32 w-96 h-96 rounded-full bg-blue/[0.04] blur-3xl" />
