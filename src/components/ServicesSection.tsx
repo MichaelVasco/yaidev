@@ -29,6 +29,7 @@ const gradients = [
 const ServicesSection = () => (
   <section id="services" className="py-28 bg-background section-divider relative overflow-hidden">
     <div className="absolute inset-0 tech-grid-bg opacity-30" />
+    <FloatingParticles count={25} className="opacity-50" />
     <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-purple/[0.03] blur-[80px]" />
     <div className="absolute top-0 left-0 w-[400px] h-[400px] rounded-full bg-teal/[0.02] blur-[100px]" />
 
