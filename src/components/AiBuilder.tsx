@@ -76,6 +76,12 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
   const [prompt, setPrompt] = useState("");
   const [phase, setPhase] = useState<"select" | "prompt" | "loading" | "result">("select");
   const [progress, setProgress] = useState(0);
+  const [showPaywall, setShowPaywall] = useState(false);
+
+  const {
+    credits, vip, accessStatus, canUse, useCredit,
+    pending, activateVip, submitPayment, grantAccess,
+  } = useCredits();
 
   const selectedCat = categories.find((c) => c.value === category);
   const isDev = category && devCategories.includes(category);
@@ -87,6 +93,15 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
 
   const handleBuild = () => {
     if (!prompt.trim()) return;
+    if (!canUse) {
+      setShowPaywall(true);
+      return;
+    }
+    const ok = useCredit();
+    if (!ok) {
+      setShowPaywall(true);
+      return;
+    }
     setPhase("loading");
     setProgress(0);
     const steps = [10, 25, 40, 55, 70, 85, 95, 100];
