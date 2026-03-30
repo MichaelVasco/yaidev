@@ -3,6 +3,7 @@ import {
   Globe, Smartphone, Monitor, Gamepad2, Bot, ImageIcon,
   Hexagon, Video, Music, PenTool, Sparkles, ArrowRight
 } from "lucide-react";
+import FloatingParticles from "@/components/FloatingParticles";
 
 const services = [
   { icon: Globe, title: "Websites", description: "High-performance, responsive websites built for speed, SEO, and conversion.", color: "text-blue", bg: "bg-blue/10 group-hover:bg-blue/20" },
