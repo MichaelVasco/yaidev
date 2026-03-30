@@ -1,9 +1,8 @@
 import { motion } from "framer-motion";
 import { Users, Bot, ArrowRight } from "lucide-react";
 
-const BuildNowSection = () => (
+const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) => (
   <section id="build-now" className="min-h-[80vh] flex items-center justify-center bg-background relative">
-    {/* Subtle dot grid */}
     <div className="absolute inset-0 opacity-[0.025]" style={{
       backgroundImage: 'radial-gradient(hsl(var(--primary)) 1px, transparent 1px)',
       backgroundSize: '28px 28px',
@@ -63,8 +62,8 @@ const BuildNowSection = () => (
         </motion.a>
 
         {/* AI Build */}
-        <motion.a
-          href="#contact"
+        <motion.button
+          onClick={onOpenAiBuilder}
           initial={{ opacity: 0, x: 30 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
@@ -86,7 +85,10 @@ const BuildNowSection = () => (
             <span>Get Started</span>
             <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
           </div>
-        </motion.a>
+          <p className="mt-4 text-primary-foreground/50 text-xs">
+            AI-powered instant creation experience.
+          </p>
+        </motion.button>
       </div>
     </div>
   </section>
