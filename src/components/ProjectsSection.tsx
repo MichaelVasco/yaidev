@@ -93,7 +93,7 @@ const ProjectsSection = () => (
             >
               <Wrapper
                 {...linkProps}
-                className="group block bg-card rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-lg hover:border-blue/15 transition-all duration-400 h-full"
+                className="group block bg-card rounded-2xl border border-border overflow-hidden card-glow hover:border-blue/15 transition-all duration-400 h-full"
               >
                 <div className={`h-0.5 w-full bg-gradient-to-r ${gradient}`} />
                 <div className="p-7">

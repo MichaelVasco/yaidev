@@ -66,7 +66,7 @@ const ServicesSection = () => (
             viewport={{ once: true }}
             transition={{ delay: i * 0.04, duration: 0.35 }}
             whileHover={{ y: -3 }}
-            className="group relative bg-card rounded-xl border border-border p-5 hover:border-blue/15 hover:shadow-md transition-all duration-300 overflow-hidden"
+            className="group relative bg-card rounded-xl border border-border p-5 hover:border-blue/15 card-glow transition-all duration-300 overflow-hidden"
           >
             <div className={`absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r ${gradients[i % gradients.length]} scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left`} />
 
