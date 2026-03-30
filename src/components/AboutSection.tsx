@@ -95,8 +95,8 @@ const AboutSection = () => (
             className="mt-8 bg-card border border-border rounded-xl p-6 w-72 md:w-80 shadow-sm"
           >
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Award size={20} className="text-primary" />
+              <div className="w-10 h-10 rounded-full bg-blue/10 flex items-center justify-center flex-shrink-0">
+                <Award size={20} className="text-blue" />
               </div>
               <div>
                 <h4 className="font-heading font-bold text-foreground text-lg leading-tight">
