@@ -29,7 +29,7 @@ const Navbar = () => {
       animate={{ y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "glass shadow-md" : "bg-transparent"
+        scrolled ? "glass" : "bg-transparent"
       }`}
     >
       <div className="container mx-auto px-4 lg:px-8">
@@ -38,20 +38,18 @@ const Navbar = () => {
             YAIDEV
           </a>
 
-          {/* Desktop Nav */}
           <div className="hidden lg:flex items-center gap-1.5">
             {navItems.map((item) => (
               <a
                 key={item.label}
                 href={item.href}
-                className="relative px-4 py-2 rounded-lg text-[13px] font-semibold bg-primary text-primary-foreground hover:bg-primary/85 active:scale-[0.97] transition-all duration-200 shadow-sm hover:shadow-md"
+                className="relative px-4 py-2 rounded-lg text-[13px] font-semibold text-foreground/80 hover:text-foreground hover:bg-primary/10 active:scale-[0.97] transition-all duration-200"
               >
                 {item.label}
               </a>
             ))}
           </div>
 
-          {/* Mobile toggle */}
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="lg:hidden p-2 rounded-lg text-foreground hover:bg-muted transition-colors"
@@ -62,7 +60,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -70,7 +67,7 @@ const Navbar = () => {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="lg:hidden overflow-hidden bg-card/95 backdrop-blur-xl border-t border-border/50"
+            className="lg:hidden overflow-hidden glass"
           >
             <div className="px-4 py-4 grid grid-cols-2 gap-2">
               {navItems.map((item) => (
@@ -78,7 +75,7 @@ const Navbar = () => {
                   key={item.label}
                   href={item.href}
                   onClick={() => setIsOpen(false)}
-                  className="px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-primary text-primary-foreground hover:bg-primary/85 transition-colors text-center"
+                  className="px-4 py-2.5 rounded-lg text-[13px] font-semibold text-foreground/80 hover:text-foreground hover:bg-primary/10 transition-colors text-center"
                 >
                   {item.label}
                 </a>
