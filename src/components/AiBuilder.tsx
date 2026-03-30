@@ -191,7 +191,7 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
                     whileHover={{ y: -3 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => handleSelect(value)}
-                    className="group bg-card rounded-xl border border-border p-5 text-left hover:border-primary/30 hover:shadow-md transition-all duration-300"
+                    className="group bg-card rounded-xl border border-border p-5 text-left card-glow hover:border-blue/20 transition-all duration-300"
                   >
                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
                       <Icon size={20} className="text-primary group-hover:text-primary-foreground transition-colors duration-300" />
