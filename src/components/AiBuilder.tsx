@@ -117,7 +117,13 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background ambient glow */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-blue/[0.03] blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-purple/[0.03] blur-[100px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-teal/[0.02] blur-[80px]" />
+      </div>
       {/* Header */}
       <div className="glass fixed top-0 left-0 right-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
