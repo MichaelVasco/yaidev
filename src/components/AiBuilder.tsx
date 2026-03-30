@@ -227,7 +227,8 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
                 </p>
               </div>
 
-              <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
+              <div className="bg-card rounded-2xl border border-border p-6 card-glow relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue/20 to-transparent" />
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
