@@ -448,6 +448,16 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
           )}
         </AnimatePresence>
       </div>
+
+      <PaywallModal
+        open={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        accessStatus={accessStatus}
+        credits={credits}
+        pending={pending}
+        onActivateVip={activateVip}
+        onSubmitPayment={submitPayment}
+      />
     </div>
   );
 };
