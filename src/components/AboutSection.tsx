@@ -144,7 +144,7 @@ const AboutSection = () => (
               impact, operational excellence, and long-term competitive advantage.
             </p>
 
-            <div className="border-l-2 border-primary/40 pl-5 py-1">
+            <div className="border-l-2 border-purple/40 pl-5 py-1">
               <p className="italic text-foreground/80">
                 "Our mission is to make world-class technology accessible to every ambitious
                 individual and forward-thinking organization on the planet."
