@@ -280,13 +280,15 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
               </p>
 
               {/* Progress bar */}
-              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden relative">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-primary to-accent rounded-full"
+                  className="h-full rounded-full"
+                  style={{ background: "linear-gradient(90deg, hsl(var(--color-blue)), hsl(var(--color-purple)), hsl(var(--color-cyan)))" }}
                   initial={{ width: "0%" }}
                   animate={{ width: `${progress}%` }}
                   transition={{ duration: 0.3 }}
                 />
+              </div>
               </div>
               <p className="text-xs text-muted-foreground mt-3">{progress}% complete</p>
 
