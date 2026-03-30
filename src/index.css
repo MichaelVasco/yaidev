@@ -128,7 +128,7 @@
     background: linear-gradient(90deg, transparent, hsl(var(--color-blue) / 0.3), hsl(var(--color-purple) / 0.3), transparent);
   }
   .tech-grid-bg {
-    background-image: radial-gradient(hsl(var(--color-blue) / 0.06) 1px, transparent 1px);
+    background-image: radial-gradient(hsl(var(--color-blue) / 0.08) 1px, transparent 1px);
     background-size: 32px 32px;
   }
   .gradient-border {
