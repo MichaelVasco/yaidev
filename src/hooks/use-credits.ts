@@ -4,7 +4,7 @@ const STORAGE_KEY = "yaidev_credits";
 const VIP_KEY = "yaidev_vip";
 const SUB_KEY = "yaidev_subscription";
 const PENDING_KEY = "yaidev_pending_payment";
-const VIP_EMAIL = "superstarmichaelvasco@gmail.com";
+const VIP_EMAIL = "contact@yaidev.com";
 const DEFAULT_CREDITS = 20;
 
 export type SubscriptionPlan = "monthly" | "yearly";

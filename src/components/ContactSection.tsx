@@ -13,8 +13,8 @@ const contactMethods = [
   {
     icon: Mail,
     label: "Email",
-    value: "superstarmichaelvasco@gmail.com",
-    href: "mailto:superstarmichaelvasco@gmail.com",
+    value: "contact@yaidev.com",
+    href: "mailto:contact@yaidev.com",
     description: "Send us an email",
   },
   {
