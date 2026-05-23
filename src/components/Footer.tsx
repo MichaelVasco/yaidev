@@ -85,8 +85,8 @@ const Footer = () => (
             <a href="tel:+2349047188353" className="flex items-center gap-3 text-muted-foreground text-sm hover:text-primary transition-colors">
               <Phone size={14} /> +234 904 718 8353
             </a>
-            <a href="mailto:superstarmichaelvasco@gmail.com" className="flex items-center gap-3 text-muted-foreground text-sm hover:text-primary transition-colors">
-              <Mail size={14} /> superstarmichaelvasco@gmail.com
+            <a href="mailto:contact@yaidev.com" className="flex items-center gap-3 text-muted-foreground text-sm hover:text-primary transition-colors">
+              <Mail size={14} /> contact@yaidev.com
             </a>
             <a href="https://wa.me/2349047188353?text=Good%20day%20Yaidev%2C%20I%20have%20an%20enquiry" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-muted-foreground text-sm hover:text-primary transition-colors">
               <MessageCircle size={14} /> WhatsApp
