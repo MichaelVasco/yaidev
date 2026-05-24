@@ -1,1 +1,7 @@
 project_id = "zatcdsbzysshgstdfrge"
+
+[functions.ai-generate]
+verify_jwt = false
+
+[functions.ai-image]
+verify_jwt = false
