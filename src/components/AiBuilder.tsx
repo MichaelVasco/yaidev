@@ -71,13 +71,24 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
   const [result, setResult] = useState<any>(null);
   const [images, setImages] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showAgents, setShowAgents] = useState(false);
+  const [videoStyle, setVideoStyle] = useState(VIDEO_STYLES[0]);
+  const [videoDuration, setVideoDuration] = useState(VIDEO_DURATIONS[1]);
+  const [videoResolution, setVideoResolution] = useState(VIDEO_RESOLUTIONS[1]);
 
   const { credits, vip, accessStatus, canUse, useCredit, pending, activateVip, submitPayment } = useCredits();
 
   const selectedCat = categories.find((c) => c.value === category);
   const isImage = category && imageCategories.includes(category);
+  const isVideo = category === "videos";
 
-  const handleSelect = (val: Category) => { setCategory(val); setPhase("prompt"); };
+  const handleSelect = (val: Category) => {
+    if (val === "agents") { setShowAgents(true); return; }
+    setCategory(val); setPhase("prompt");
+  };
+
+  if (showAgents) return <AiAgents onBack={() => setShowAgents(false)} />;
+
 
   const handleBuild = async () => {
     if (!prompt.trim() || !category) return;
