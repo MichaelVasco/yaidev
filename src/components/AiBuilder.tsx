@@ -3,15 +3,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Sparkles, Send, CheckCircle2,
   Globe, Smartphone, Monitor, Gamepad2, Bot, ImageIcon,
-  Hexagon, Video, Music, PenTool, Wand2,
+  Hexagon, Video, Music, PenTool, Wand2, BrainCircuit,
   Download, Copy, RotateCcw, Crown, Coins,
   Activity, Cpu, Zap, CircleDot, AlertCircle, Code2, ExternalLink
 } from "lucide-react";
 import { useCredits } from "@/hooks/use-credits";
 import PaywallModal from "@/components/PaywallModal";
 import FloatingParticles from "@/components/FloatingParticles";
+import AiAgents from "@/components/AiAgents";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
 
 const categories = [
   { value: "websites", label: "Websites", icon: Globe, color: "blue" },
@@ -19,6 +21,7 @@ const categories = [
   { value: "softwares", label: "Softwares", icon: Monitor, color: "teal" },
   { value: "games", label: "Games", icon: Gamepad2, color: "cyan" },
   { value: "bots", label: "Bots", icon: Bot, color: "blue" },
+  { value: "agents", label: "AI Agents", icon: BrainCircuit, color: "purple" },
   { value: "images", label: "Create Images", icon: ImageIcon, color: "purple" },
   { value: "logos", label: "Create Logos", icon: Hexagon, color: "teal" },
   { value: "videos", label: "Create Videos", icon: Video, color: "cyan" },
@@ -29,6 +32,11 @@ const categories = [
 
 type Category = (typeof categories)[number]["value"];
 const imageCategories: Category[] = ["images", "logos", "designs"];
+
+const VIDEO_STYLES = ["Promotional", "AI Commercial", "Product", "Explainer", "Social Media", "Cinematic", "Animation"];
+const VIDEO_DURATIONS = ["15s", "30s", "60s", "90s"];
+const VIDEO_RESOLUTIONS = ["720p", "1080p", "4K"];
+
 
 const AiPulse = ({ color = "blue" }: { color?: string }) => (
   <span className="relative flex h-2.5 w-2.5">
@@ -63,13 +71,24 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
   const [result, setResult] = useState<any>(null);
   const [images, setImages] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showAgents, setShowAgents] = useState(false);
+  const [videoStyle, setVideoStyle] = useState(VIDEO_STYLES[0]);
+  const [videoDuration, setVideoDuration] = useState(VIDEO_DURATIONS[1]);
+  const [videoResolution, setVideoResolution] = useState(VIDEO_RESOLUTIONS[1]);
 
   const { credits, vip, accessStatus, canUse, useCredit, pending, activateVip, submitPayment } = useCredits();
 
   const selectedCat = categories.find((c) => c.value === category);
   const isImage = category && imageCategories.includes(category);
+  const isVideo = category === "videos";
 
-  const handleSelect = (val: Category) => { setCategory(val); setPhase("prompt"); };
+  const handleSelect = (val: Category) => {
+    if (val === "agents") { setShowAgents(true); return; }
+    setCategory(val); setPhase("prompt");
+  };
+
+  if (showAgents) return <AiAgents onBack={() => setShowAgents(false)} />;
+
 
   const handleBuild = async () => {
     if (!prompt.trim() || !category) return;
@@ -96,9 +115,13 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
         if ((data as any)?.error) throw new Error((data as any).error);
         setImages((data as any).images || []);
       } else {
+        const fullPrompt = isVideo
+          ? `${prompt}\n\nProduction specs:\n- Style: ${videoStyle}\n- Duration: ${videoDuration}\n- Resolution: ${videoResolution}`
+          : prompt;
         const { data, error } = await supabase.functions.invoke("ai-generate", {
-          body: { category, prompt },
+          body: { category, prompt: fullPrompt },
         });
+
         if (error) throw new Error(error.message || "AI generation failed");
         if ((data as any)?.error) throw new Error((data as any).error);
         setResult((data as any).result);
@@ -218,11 +241,46 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
                 </div>
               )}
 
+              {isVideo && (
+                <div className="mb-4 bg-card rounded-2xl border border-border p-5 card-glow space-y-4">
+                  <div>
+                    <label className="text-[10px] font-semibold tracking-wider uppercase text-muted-foreground mb-2 block">Video Style</label>
+                    <div className="flex flex-wrap gap-2">
+                      {VIDEO_STYLES.map((s) => (
+                        <button key={s} type="button" onClick={() => setVideoStyle(s)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${videoStyle === s ? "bg-cyan/10 border-cyan/40 text-cyan" : "border-border text-muted-foreground hover:border-cyan/20"}`}>{s}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-semibold tracking-wider uppercase text-muted-foreground mb-2 block">Duration</label>
+                      <div className="flex flex-wrap gap-2">
+                        {VIDEO_DURATIONS.map((d) => (
+                          <button key={d} type="button" onClick={() => setVideoDuration(d)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${videoDuration === d ? "bg-blue/10 border-blue/40 text-blue" : "border-border text-muted-foreground hover:border-blue/20"}`}>{d}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold tracking-wider uppercase text-muted-foreground mb-2 block">Resolution</label>
+                      <div className="flex flex-wrap gap-2">
+                        {VIDEO_RESOLUTIONS.map((r) => (
+                          <button key={r} type="button" onClick={() => setVideoResolution(r)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${videoResolution === r ? "bg-purple/10 border-purple/40 text-purple" : "border-border text-muted-foreground hover:border-purple/20"}`}>{r}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="bg-card rounded-2xl border border-border p-6 card-glow relative overflow-hidden group">
                 <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue/20 to-transparent" />
                 <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={6}
                   placeholder={`Describe the ${selectedCat?.label.toLowerCase()} you want to build...`}
                   className="w-full bg-transparent text-foreground placeholder:text-muted-foreground/50 focus:outline-none resize-none text-[15px] leading-relaxed" />
+
                 <div className="flex items-center justify-between pt-4 border-t border-border mt-2">
                   <button onClick={handleReset} className="text-xs text-muted-foreground hover:text-foreground transition-colors">← Change category</button>
                   <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={handleBuild} disabled={!prompt.trim()}
