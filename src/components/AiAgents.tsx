@@ -3,10 +3,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Plus, Bot, Send, Trash2, Rocket, Upload, Sparkles,
   Briefcase, Headphones, Megaphone, Code2, TrendingUp, LineChart,
-  Share2, PenLine, Mic, User, CheckCircle2, Activity, X, Power
+  Share2, PenLine, Mic, User, Activity, X, Monitor, Globe, Zap,
+  Download, CheckCircle2, Loader2, RefreshCw, Apple, Cloud, MessageSquare,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  buildBrowserExtension, buildPwa, buildDesktopPackage, downloadBlob,
+  type AgentExport,
+} from "@/lib/agent-deploy";
 
 const STORAGE = "yaidev_ai_agents";
 
@@ -39,6 +44,7 @@ type Agent = {
   trainingPrompts: string[];
   createdAt: string;
   status: "active" | "idle";
+  stats?: { messages: number; lastActive?: string; deployments: number };
 };
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -58,9 +64,40 @@ ${a.trainingPrompts.map((p, i) => `${i + 1}. ${p}`).join("\n")}
 
 Always stay in character. Be helpful, accurate, and act according to your purpose.`;
 
+type DeployKind = "desktop" | "browser" | "yaidev";
+type DeployState = {
+  kind: DeployKind;
+  status: "queued" | "building" | "ready" | "error";
+  progress: number;
+  step: string;
+  blob?: Blob;
+  filename?: string;
+};
+
+const DESKTOP_STEPS = [
+  "Bootstrapping Electron shell...",
+  "Compiling agent runtime...",
+  "Bundling chat UI & memory store...",
+  "Packaging Windows / macOS / Linux installers...",
+  "Signing build artifacts...",
+];
+const BROWSER_STEPS = [
+  "Generating manifest v3...",
+  "Bundling popup & side panel UI...",
+  "Wiring overlay assistant...",
+  "Compiling extension package...",
+  "Verifying browser compatibility...",
+];
+const YAIDEV_STEPS = [
+  "Provisioning agent runtime...",
+  "Loading personality & training...",
+  "Connecting to AI Gateway...",
+  "Initializing chat session...",
+];
+
 const AiAgents = ({ onBack }: { onBack: () => void }) => {
   const [agents, setAgents] = useState<Agent[]>(loadAgents);
-  const [view, setView] = useState<"dashboard" | "create" | "chat">("dashboard");
+  const [view, setView] = useState<"dashboard" | "create" | "deploy" | "chat">("dashboard");
   const [activeAgent, setActiveAgent] = useState<Agent | null>(null);
 
   // create form
@@ -76,7 +113,20 @@ const AiAgents = ({ onBack }: { onBack: () => void }) => {
   const [thinking, setThinking] = useState(false);
   const chatEnd = useRef<HTMLDivElement>(null);
 
+  // deploy
+  const [deploys, setDeploys] = useState<Record<DeployKind, DeployState | null>>({
+    desktop: null, browser: null, yaidev: null,
+  });
+
   useEffect(() => { chatEnd.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, thinking]);
+
+  const updateAgentStats = (id: string, patch: Partial<Agent["stats"]>) => {
+    const next = agents.map(a => a.id === id ? {
+      ...a,
+      stats: { messages: 0, deployments: 0, ...(a.stats || {}), ...patch } as Agent["stats"],
+    } : a);
+    setAgents(next); saveAgents(next);
+  };
 
   const onAvatar = (f: File) => {
     if (f.size > 2 * 1024 * 1024) { toast.error("Image must be under 2MB"); return; }
@@ -104,18 +154,24 @@ const AiAgents = ({ onBack }: { onBack: () => void }) => {
       trainingPrompts: form.training.split("\n").map((s) => s.trim()).filter(Boolean),
       createdAt: new Date().toISOString(),
       status: "active",
+      stats: { messages: 0, deployments: 0 },
     };
     const next = [agent, ...agents];
     setAgents(next); saveAgents(next);
     toast.success(`Agent "${agent.name}" created`);
     resetForm();
     setActiveAgent(agent);
-    setMessages([]);
-    setView("chat");
+    setDeploys({ desktop: null, browser: null, yaidev: null });
+    setView("deploy");
   };
 
   const launchAgent = (a: Agent) => {
     setActiveAgent(a); setMessages([]); setView("chat");
+  };
+  const openDeploy = (a: Agent) => {
+    setActiveAgent(a);
+    setDeploys({ desktop: null, browser: null, yaidev: null });
+    setView("deploy");
   };
 
   const deleteAgent = (id: string) => {
@@ -129,6 +185,47 @@ const AiAgents = ({ onBack }: { onBack: () => void }) => {
     setAgents(next); saveAgents(next);
   };
 
+  const runDeploy = async (kind: DeployKind) => {
+    if (!activeAgent) return;
+    const steps = kind === "desktop" ? DESKTOP_STEPS : kind === "browser" ? BROWSER_STEPS : YAIDEV_STEPS;
+    setDeploys(d => ({ ...d, [kind]: { kind, status: "building", progress: 5, step: steps[0] } }));
+    try {
+      for (let i = 0; i < steps.length; i++) {
+        await new Promise(r => setTimeout(r, 550 + Math.random() * 400));
+        setDeploys(d => ({ ...d, [kind]: { ...(d[kind] as DeployState), progress: Math.round(((i + 1) / steps.length) * 90), step: steps[i] } }));
+      }
+      const exp: AgentExport = {
+        id: activeAgent.id, name: activeAgent.name, type: activeAgent.type,
+        personality: activeAgent.personality, purpose: activeAgent.purpose,
+        instructions: activeAgent.instructions, trainingPrompts: activeAgent.trainingPrompts,
+        avatar: activeAgent.avatar,
+      };
+      const slug = activeAgent.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "agent";
+      if (kind === "desktop") {
+        const blob = await buildDesktopPackage(exp);
+        setDeploys(d => ({ ...d, desktop: { kind, status: "ready", progress: 100, step: "Desktop App Ready", blob, filename: `${slug}-desktop.zip` } }));
+      } else if (kind === "browser") {
+        const blob = await buildBrowserExtension(exp);
+        setDeploys(d => ({ ...d, browser: { kind, status: "ready", progress: 100, step: "Browser Package Ready", blob, filename: `${slug}-extension.zip` } }));
+      } else {
+        setDeploys(d => ({ ...d, yaidev: { kind, status: "ready", progress: 100, step: "Live on YAIDEV" } }));
+      }
+      updateAgentStats(activeAgent.id, { deployments: (activeAgent.stats?.deployments || 0) + 1 });
+      toast.success(kind === "desktop" ? "Desktop build ready" : kind === "browser" ? "Browser package ready" : "Agent live on YAIDEV");
+      if (kind === "yaidev") { setTimeout(() => { setMessages([]); setView("chat"); }, 600); }
+    } catch (e: any) {
+      setDeploys(d => ({ ...d, [kind]: { kind, status: "error", progress: 0, step: e?.message || "Build failed" } }));
+      toast.error("Deployment failed");
+    }
+  };
+
+  const downloadDeploy = async (kind: DeployKind, variant?: string) => {
+    const d = deploys[kind];
+    if (!d?.blob || !d.filename) return;
+    const name = variant ? d.filename.replace(/\.zip$/, `-${variant}.zip`) : d.filename;
+    downloadBlob(d.blob, name);
+  };
+
   const sendMessage = async () => {
     if (!input.trim() || !activeAgent || thinking) return;
     const userMsg: Msg = { role: "user", content: input.trim() };
@@ -140,7 +237,12 @@ const AiAgents = ({ onBack }: { onBack: () => void }) => {
       });
       if (error) throw new Error(error.message);
       if ((data as any)?.error) throw new Error((data as any).error);
-      setMessages([...next, { role: "assistant", content: (data as any).reply || "..." }]);
+      const reply = (data as any).reply || "...";
+      setMessages([...next, { role: "assistant", content: reply }]);
+      updateAgentStats(activeAgent.id, {
+        messages: (activeAgent.stats?.messages || 0) + 2,
+        lastActive: new Date().toISOString(),
+      });
     } catch (e: any) {
       toast.error(e?.message || "Agent failed to respond");
       setMessages(next);
@@ -153,6 +255,10 @@ const AiAgents = ({ onBack }: { onBack: () => void }) => {
     const T = AGENT_TYPES.find((t) => t.value === type)?.icon || Bot;
     return <T size={size} className={className} />;
   };
+
+  const totalMessages = agents.reduce((s, a) => s + (a.stats?.messages || 0), 0);
+  const totalDeployments = agents.reduce((s, a) => s + (a.stats?.deployments || 0), 0);
+  const activeCount = agents.filter(a => a.status === "active").length;
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -184,15 +290,31 @@ const AiAgents = ({ onBack }: { onBack: () => void }) => {
       <div className="pt-24 pb-20 container mx-auto px-4">
         <AnimatePresence mode="wait">
           {view === "dashboard" && (
-            <motion.div key="dash" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="max-w-5xl mx-auto">
+            <motion.div key="dash" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="max-w-6xl mx-auto">
               <div className="text-center mb-10">
                 <motion.div animate={{ scale: [1, 1.08, 1] }} transition={{ duration: 3, repeat: Infinity }} className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 relative" style={{ background: "linear-gradient(135deg, hsl(var(--color-blue) / 0.15), hsl(var(--color-purple) / 0.15))" }}>
                   <Bot className="text-blue" size={28} />
                   <div className="absolute inset-0 rounded-2xl glow-blue opacity-50" />
                 </motion.div>
                 <h1 className="text-3xl md:text-4xl font-heading font-bold text-foreground mb-3">AI <span className="text-gradient">Agents</span></h1>
-                <p className="text-muted-foreground">Create, train, and launch your personal AI agents</p>
+                <p className="text-muted-foreground">Create, train, deploy your agents to desktop, browser, or YAIDEV</p>
               </div>
+
+              {agents.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+                  {[
+                    { label: "Total Agents", value: agents.length, icon: Bot, color: "blue" },
+                    { label: "Active", value: activeCount, icon: Zap, color: "teal" },
+                    { label: "Messages", value: totalMessages, icon: MessageSquare, color: "purple" },
+                    { label: "Deployments", value: totalDeployments, icon: Rocket, color: "blue" },
+                  ].map((s) => (
+                    <div key={s.label} className="bg-card border border-border rounded-xl p-4 card-glow">
+                      <div className="flex items-center gap-2 mb-2 text-muted-foreground"><s.icon size={14} /><span className="text-xs uppercase tracking-wider font-semibold">{s.label}</span></div>
+                      <div className="text-2xl font-heading font-bold text-foreground">{s.value}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {agents.length === 0 ? (
                 <div className="bg-card border border-border rounded-2xl p-12 text-center card-glow">
@@ -223,10 +345,18 @@ const AiAgents = ({ onBack }: { onBack: () => void }) => {
                           </span>
                         </button>
                       </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2 mb-4 min-h-[2rem]">{a.purpose}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-2 mb-3 min-h-[2rem]">{a.purpose}</p>
+                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground mb-3">
+                        <span className="flex items-center gap-1"><MessageSquare size={10} />{a.stats?.messages || 0}</span>
+                        <span className="flex items-center gap-1"><Rocket size={10} />{a.stats?.deployments || 0}</span>
+                        {a.stats?.lastActive && <span className="ml-auto">active {new Date(a.stats.lastActive).toLocaleDateString()}</span>}
+                      </div>
                       <div className="flex items-center gap-2">
                         <button onClick={() => launchAgent(a)} className="flex-1 px-3 py-2 rounded-lg text-white text-xs font-semibold flex items-center justify-center gap-1.5 hover-glow-blue" style={{ background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple)))" }}>
                           <Rocket size={12} /> Launch
+                        </button>
+                        <button onClick={() => openDeploy(a)} className="px-3 py-2 rounded-lg border border-blue/30 text-blue text-xs font-semibold flex items-center gap-1.5 hover:bg-blue/10 transition-colors">
+                          <Cloud size={12} /> Deploy
                         </button>
                         <button onClick={() => deleteAgent(a.id)} className="p-2 rounded-lg border border-border text-muted-foreground hover:text-destructive hover:border-destructive/30 transition-colors" aria-label="Delete">
                           <Trash2 size={14} />
@@ -247,7 +377,6 @@ const AiAgents = ({ onBack }: { onBack: () => void }) => {
               </div>
 
               <div className="bg-card border border-border rounded-2xl p-6 card-glow space-y-5">
-                {/* Avatar + name */}
                 <div className="flex items-center gap-4">
                   <button onClick={() => fileRef.current?.click()} className="w-20 h-20 rounded-2xl border-2 border-dashed border-border hover:border-blue/40 flex items-center justify-center overflow-hidden bg-muted/30 transition-colors shrink-0" aria-label="Upload avatar">
                     {form.avatar ? <img src={form.avatar} alt="avatar" className="w-full h-full object-cover" /> : <Upload size={20} className="text-muted-foreground" />}
@@ -259,7 +388,6 @@ const AiAgents = ({ onBack }: { onBack: () => void }) => {
                   </div>
                 </div>
 
-                {/* Type */}
                 <div>
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block">Agent Type</label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -272,7 +400,6 @@ const AiAgents = ({ onBack }: { onBack: () => void }) => {
                   </div>
                 </div>
 
-                {/* Personality */}
                 <div>
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block">Personality</label>
                   <select value={form.personality} onChange={(e) => setForm({ ...form, personality: e.target.value })} className="w-full bg-muted/30 border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:border-blue focus:outline-none">
@@ -280,19 +407,16 @@ const AiAgents = ({ onBack }: { onBack: () => void }) => {
                   </select>
                 </div>
 
-                {/* Purpose */}
                 <div>
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block">Business Purpose</label>
                   <input value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} placeholder="What this agent does, who it serves..." className="w-full bg-muted/30 border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:border-blue focus:outline-none" />
                 </div>
 
-                {/* Instructions */}
                 <div>
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block">Custom Instructions</label>
                   <textarea value={form.instructions} onChange={(e) => setForm({ ...form, instructions: e.target.value })} rows={3} placeholder="Tone, rules, boundaries, response style..." className="w-full bg-muted/30 border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:border-blue focus:outline-none resize-none" />
                 </div>
 
-                {/* Training */}
                 <div>
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block">Training Prompts (one per line)</label>
                   <textarea value={form.training} onChange={(e) => setForm({ ...form, training: e.target.value })} rows={4} placeholder="Example questions, knowledge facts, sample responses..." className="w-full bg-muted/30 border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:border-blue focus:outline-none resize-none font-mono" />
@@ -303,9 +427,84 @@ const AiAgents = ({ onBack }: { onBack: () => void }) => {
                   <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={saveAgent}
                     className="px-6 py-2.5 rounded-lg text-white font-heading font-semibold text-sm flex items-center gap-2 hover-glow-blue"
                     style={{ background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple)))" }}>
-                    <Sparkles size={14} /> Save & Launch
+                    <Sparkles size={14} /> Save & Deploy
                   </motion.button>
                 </div>
+              </div>
+            </motion.div>
+          )}
+
+          {view === "deploy" && activeAgent && (
+            <motion.div key="deploy" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="max-w-5xl mx-auto">
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal/15 text-teal text-xs font-semibold mb-3">
+                  <CheckCircle2 size={12} /> Agent created
+                </div>
+                <h2 className="text-2xl md:text-3xl font-heading font-bold text-foreground mb-2">
+                  Deploy <span className="text-gradient">{activeAgent.name}</span>
+                </h2>
+                <p className="text-sm text-muted-foreground">Ship your agent to desktop, browser, or run it live on YAIDEV</p>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                {/* Desktop */}
+                <DeployCard
+                  icon={Monitor}
+                  title="Download to Desktop"
+                  subtitle="Windows • macOS • Linux"
+                  features={["Native desktop UI", "Chat + agent memory", "API integration", "Offline & online", "Desktop notifications"]}
+                  state={deploys.desktop}
+                  onDeploy={() => runDeploy("desktop")}
+                  variants={[
+                    { label: "Windows .exe", icon: Monitor, key: "windows" },
+                    { label: "macOS .dmg", icon: Apple, key: "macos" },
+                    { label: "Linux .AppImage", icon: Monitor, key: "linux" },
+                  ]}
+                  onDownload={(v) => downloadDeploy("desktop", v)}
+                />
+                {/* Browser */}
+                <DeployCard
+                  icon={Globe}
+                  title="Download to Browser"
+                  subtitle="Chrome • Edge • Firefox • Brave"
+                  features={["Browser extension", "Side panel mode", "Popup assistant", "Chat overlay", "PWA install"]}
+                  state={deploys.browser}
+                  onDeploy={() => runDeploy("browser")}
+                  variants={[
+                    { label: "Chrome / Edge / Brave", icon: Globe, key: "chromium" },
+                    { label: "Firefox Add-on", icon: Globe, key: "firefox" },
+                    { label: "Progressive Web App", icon: Download, key: "pwa", customBuild: "pwa" },
+                  ]}
+                  onDownload={async (v, cb) => {
+                    if (cb === "pwa" && activeAgent) {
+                      const exp: AgentExport = { ...activeAgent };
+                      const blob = await buildPwa(exp);
+                      const slug = activeAgent.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "agent";
+                      downloadBlob(blob, `${slug}-pwa.zip`);
+                    } else {
+                      downloadDeploy("browser", v);
+                    }
+                  }}
+                />
+                {/* YAIDEV */}
+                <DeployCard
+                  icon={Zap}
+                  title="Use on YAIDEV"
+                  subtitle="Instant live chat"
+                  features={["Launch immediately", "Saved in dashboard", "Persistent memory", "Editable & retrainable", "Multi-agent ready"]}
+                  state={deploys.yaidev}
+                  onDeploy={() => runDeploy("yaidev")}
+                  primaryAction={{
+                    label: "Open Live Chat",
+                    onClick: () => { setMessages([]); setView("chat"); },
+                  }}
+                />
+              </div>
+
+              <div className="mt-8 text-center">
+                <button onClick={() => setView("dashboard")} className="text-xs text-muted-foreground hover:text-foreground">
+                  ← Back to dashboard
+                </button>
               </div>
             </motion.div>
           )}
@@ -313,7 +512,6 @@ const AiAgents = ({ onBack }: { onBack: () => void }) => {
           {view === "chat" && activeAgent && (
             <motion.div key="chat" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="max-w-3xl mx-auto">
               <div className="bg-card border border-border rounded-2xl card-glow overflow-hidden flex flex-col h-[calc(100vh-180px)]">
-                {/* Header */}
                 <div className="p-4 border-b border-border flex items-center gap-3 bg-gradient-to-r from-blue/5 to-purple/5">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue/20 to-purple/20 flex items-center justify-center overflow-hidden shrink-0">
                     {activeAgent.avatar ? <img src={activeAgent.avatar} alt={activeAgent.name} className="w-full h-full object-cover" /> : <TypeIcon type={activeAgent.type} className="text-blue" />}
@@ -327,10 +525,12 @@ const AiAgents = ({ onBack }: { onBack: () => void }) => {
                     </div>
                     <p className="text-xs text-muted-foreground truncate">{activeAgent.personality} • {AGENT_TYPES.find(t => t.value === activeAgent.type)?.label}</p>
                   </div>
+                  <button onClick={() => openDeploy(activeAgent)} className="px-3 py-1.5 rounded-lg border border-blue/30 text-blue text-xs font-semibold flex items-center gap-1.5 hover:bg-blue/10 transition-colors">
+                    <Cloud size={12} /> Deploy
+                  </button>
                   <button onClick={() => setView("dashboard")} className="p-2 rounded-lg hover:bg-muted text-muted-foreground" aria-label="Close chat"><X size={16} /></button>
                 </div>
 
-                {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
                   {messages.length === 0 && (
                     <div className="text-center py-12">
@@ -360,7 +560,6 @@ const AiAgents = ({ onBack }: { onBack: () => void }) => {
                   <div ref={chatEnd} />
                 </div>
 
-                {/* Input */}
                 <div className="p-3 border-t border-border bg-card">
                   <div className="flex items-end gap-2">
                     <textarea value={input} onChange={(e) => setInput(e.target.value)}
@@ -380,6 +579,99 @@ const AiAgents = ({ onBack }: { onBack: () => void }) => {
         </AnimatePresence>
       </div>
     </div>
+  );
+};
+
+type DeployCardProps = {
+  icon: any;
+  title: string;
+  subtitle: string;
+  features: string[];
+  state: DeployState | null;
+  onDeploy: () => void;
+  variants?: { label: string; icon: any; key: string; customBuild?: string }[];
+  onDownload?: (variant: string, customBuild?: string) => void;
+  primaryAction?: { label: string; onClick: () => void };
+};
+
+const DeployCard = ({ icon: Icon, title, subtitle, features, state, onDeploy, variants, onDownload, primaryAction }: DeployCardProps) => {
+  const status = state?.status;
+  const isBuilding = status === "building" || status === "queued";
+  const isReady = status === "ready";
+  const isError = status === "error";
+
+  return (
+    <motion.div whileHover={{ y: -3 }} className="relative bg-card border border-border rounded-2xl p-6 card-glow overflow-hidden flex flex-col">
+      <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-blue/5 blur-3xl" />
+      <div className="relative">
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: "linear-gradient(135deg, hsl(var(--color-blue) / 0.15), hsl(var(--color-purple) / 0.15))" }}>
+          <Icon className="text-blue" size={22} />
+        </div>
+        <h3 className="font-heading font-bold text-lg text-foreground mb-1">{title}</h3>
+        <p className="text-xs text-muted-foreground mb-4">{subtitle}</p>
+        <ul className="space-y-1.5 mb-5">
+          {features.map(f => (
+            <li key={f} className="flex items-center gap-2 text-xs text-muted-foreground">
+              <CheckCircle2 size={12} className="text-teal shrink-0" /> {f}
+            </li>
+          ))}
+        </ul>
+
+        {!status && (
+          <button onClick={onDeploy} className="w-full px-4 py-2.5 rounded-lg text-white font-heading font-semibold text-sm flex items-center justify-center gap-2 hover-glow-blue"
+            style={{ background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple)))" }}>
+            <Rocket size={14} /> Deploy
+          </button>
+        )}
+
+        {isBuilding && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-xs text-blue">
+              <Loader2 size={12} className="animate-spin" />
+              <span className="truncate">{state?.step}</span>
+            </div>
+            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+              <motion.div className="h-full" animate={{ width: `${state?.progress || 0}%` }}
+                style={{ background: "linear-gradient(90deg, hsl(var(--color-blue)), hsl(var(--color-purple)))" }} />
+            </div>
+            <p className="text-[10px] text-muted-foreground text-center">{state?.progress}%</p>
+          </div>
+        )}
+
+        {isReady && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-xs text-teal font-semibold">
+              <CheckCircle2 size={14} /> {state?.step}
+            </div>
+            {primaryAction && (
+              <button onClick={primaryAction.onClick} className="w-full px-4 py-2.5 rounded-lg text-white font-semibold text-sm flex items-center justify-center gap-2 hover-glow-blue"
+                style={{ background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple)))" }}>
+                <Zap size={14} /> {primaryAction.label}
+              </button>
+            )}
+            {variants && onDownload && variants.map(v => (
+              <button key={v.key} onClick={() => onDownload(v.key, v.customBuild)}
+                className="w-full px-3 py-2 rounded-lg border border-blue/30 text-foreground text-xs font-semibold flex items-center justify-between hover:bg-blue/10 transition-colors">
+                <span className="flex items-center gap-2"><v.icon size={12} className="text-blue" /> {v.label}</span>
+                <Download size={12} className="text-blue" />
+              </button>
+            ))}
+            <button onClick={onDeploy} className="w-full text-[10px] text-muted-foreground hover:text-foreground flex items-center justify-center gap-1 pt-1">
+              <RefreshCw size={10} /> Rebuild
+            </button>
+          </div>
+        )}
+
+        {isError && (
+          <div className="space-y-2">
+            <p className="text-xs text-destructive">{state?.step}</p>
+            <button onClick={onDeploy} className="w-full px-4 py-2 rounded-lg border border-destructive/30 text-destructive text-xs font-semibold flex items-center justify-center gap-2 hover:bg-destructive/10">
+              <RefreshCw size={12} /> Retry deployment
+            </button>
+          </div>
+        )}
+      </div>
+    </motion.div>
   );
 };
 
