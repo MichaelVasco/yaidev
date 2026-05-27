@@ -115,9 +115,13 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
         if ((data as any)?.error) throw new Error((data as any).error);
         setImages((data as any).images || []);
       } else {
+        const fullPrompt = isVideo
+          ? `${prompt}\n\nProduction specs:\n- Style: ${videoStyle}\n- Duration: ${videoDuration}\n- Resolution: ${videoResolution}`
+          : prompt;
         const { data, error } = await supabase.functions.invoke("ai-generate", {
-          body: { category, prompt },
+          body: { category, prompt: fullPrompt },
         });
+
         if (error) throw new Error(error.message || "AI generation failed");
         if ((data as any)?.error) throw new Error((data as any).error);
         setResult((data as any).result);
