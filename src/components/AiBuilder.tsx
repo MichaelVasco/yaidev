@@ -241,11 +241,46 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
                 </div>
               )}
 
+              {isVideo && (
+                <div className="mb-4 bg-card rounded-2xl border border-border p-5 card-glow space-y-4">
+                  <div>
+                    <label className="text-[10px] font-semibold tracking-wider uppercase text-muted-foreground mb-2 block">Video Style</label>
+                    <div className="flex flex-wrap gap-2">
+                      {VIDEO_STYLES.map((s) => (
+                        <button key={s} type="button" onClick={() => setVideoStyle(s)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${videoStyle === s ? "bg-cyan/10 border-cyan/40 text-cyan" : "border-border text-muted-foreground hover:border-cyan/20"}`}>{s}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-semibold tracking-wider uppercase text-muted-foreground mb-2 block">Duration</label>
+                      <div className="flex flex-wrap gap-2">
+                        {VIDEO_DURATIONS.map((d) => (
+                          <button key={d} type="button" onClick={() => setVideoDuration(d)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${videoDuration === d ? "bg-blue/10 border-blue/40 text-blue" : "border-border text-muted-foreground hover:border-blue/20"}`}>{d}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold tracking-wider uppercase text-muted-foreground mb-2 block">Resolution</label>
+                      <div className="flex flex-wrap gap-2">
+                        {VIDEO_RESOLUTIONS.map((r) => (
+                          <button key={r} type="button" onClick={() => setVideoResolution(r)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${videoResolution === r ? "bg-purple/10 border-purple/40 text-purple" : "border-border text-muted-foreground hover:border-purple/20"}`}>{r}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="bg-card rounded-2xl border border-border p-6 card-glow relative overflow-hidden group">
                 <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue/20 to-transparent" />
                 <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={6}
                   placeholder={`Describe the ${selectedCat?.label.toLowerCase()} you want to build...`}
                   className="w-full bg-transparent text-foreground placeholder:text-muted-foreground/50 focus:outline-none resize-none text-[15px] leading-relaxed" />
+
                 <div className="flex items-center justify-between pt-4 border-t border-border mt-2">
                   <button onClick={handleReset} className="text-xs text-muted-foreground hover:text-foreground transition-colors">← Change category</button>
                   <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={handleBuild} disabled={!prompt.trim()}
