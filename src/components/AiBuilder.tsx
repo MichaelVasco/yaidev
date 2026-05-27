@@ -21,6 +21,7 @@ const categories = [
   { value: "softwares", label: "Softwares", icon: Monitor, color: "teal" },
   { value: "games", label: "Games", icon: Gamepad2, color: "cyan" },
   { value: "bots", label: "Bots", icon: Bot, color: "blue" },
+  { value: "agents", label: "AI Agents", icon: BrainCircuit, color: "purple" },
   { value: "images", label: "Create Images", icon: ImageIcon, color: "purple" },
   { value: "logos", label: "Create Logos", icon: Hexagon, color: "teal" },
   { value: "videos", label: "Create Videos", icon: Video, color: "cyan" },
@@ -31,6 +32,11 @@ const categories = [
 
 type Category = (typeof categories)[number]["value"];
 const imageCategories: Category[] = ["images", "logos", "designs"];
+
+const VIDEO_STYLES = ["Promotional", "AI Commercial", "Product", "Explainer", "Social Media", "Cinematic", "Animation"];
+const VIDEO_DURATIONS = ["15s", "30s", "60s", "90s"];
+const VIDEO_RESOLUTIONS = ["720p", "1080p", "4K"];
+
 
 const AiPulse = ({ color = "blue" }: { color?: string }) => (
   <span className="relative flex h-2.5 w-2.5">
