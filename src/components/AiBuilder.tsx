@@ -3,15 +3,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Sparkles, Send, CheckCircle2,
   Globe, Smartphone, Monitor, Gamepad2, Bot, ImageIcon,
-  Hexagon, Video, Music, PenTool, Wand2,
+  Hexagon, Video, Music, PenTool, Wand2, BrainCircuit,
   Download, Copy, RotateCcw, Crown, Coins,
   Activity, Cpu, Zap, CircleDot, AlertCircle, Code2, ExternalLink
 } from "lucide-react";
 import { useCredits } from "@/hooks/use-credits";
 import PaywallModal from "@/components/PaywallModal";
 import FloatingParticles from "@/components/FloatingParticles";
+import AiAgents from "@/components/AiAgents";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
 
 const categories = [
   { value: "websites", label: "Websites", icon: Globe, color: "blue" },
