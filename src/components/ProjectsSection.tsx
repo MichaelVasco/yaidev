@@ -39,7 +39,7 @@ const projects = [
 
 const ProjectsSection = () => (
   <section id="projects" className="py-28 bg-white section-divider relative">
-    <div className="absolute inset-0 tech-grid-bg opacity-40" />
+    <div className="absolute inset-0 tech-grid-bg opacity-40 pointer-events-none" />
     <FloatingParticles count={20} className="opacity-30" />
     <div className="container mx-auto px-4 lg:px-8 relative z-10">
       <motion.div
@@ -85,7 +85,7 @@ const ProjectsSection = () => (
             >
               <Wrapper
                 {...linkProps}
-                className="group block bg-white rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-lg hover:shadow-blue/8 hover:border-primary/15 transition-all duration-400 h-full"
+                className="group block bg-white rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-lg hover:shadow-blue/8 hover:border-primary/15 transition-all duration-400 h-full cursor-pointer pointer-events-auto touch-manipulation"
               >
                 <div className={`h-0.5 w-full bg-gradient-to-r ${gradient}`} />
                 <div className="p-7">
