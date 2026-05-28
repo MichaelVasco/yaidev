@@ -53,9 +53,11 @@ const Index = () => {
       <Hero />
       <AboutSection />
       <ProductsSection />
+      <div id="features" className="scroll-mt-20" aria-hidden="true" />
       <ServicesSection />
       <TeamSection />
       <ProjectsSection />
+      <div id="pricing" className="scroll-mt-20" aria-hidden="true" />
       <BuildNowSection onOpenAiBuilder={openBuilder} />
       <ContactSection />
       <Footer />
