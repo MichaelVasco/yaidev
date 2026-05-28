@@ -29,6 +29,25 @@ const ScrollToHash = () => {
     }
   }, [pathname, hash]);
 
+  useEffect(() => {
+    const handleNativeHashClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      const anchor = target?.closest<HTMLAnchorElement>('a[href^="#"], a[href^="/#"]');
+      if (!anchor) return;
+      const url = new URL(anchor.href, window.location.origin);
+      if (url.origin !== window.location.origin || !url.hash) return;
+      if (window.location.pathname !== url.pathname) return;
+      const el = document.getElementById(url.hash.slice(1));
+      if (!el) return;
+      event.preventDefault();
+      window.history.pushState(null, "", `${url.pathname}${url.hash}`);
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+
+    document.addEventListener("click", handleNativeHashClick);
+    return () => document.removeEventListener("click", handleNativeHashClick);
+  }, []);
+
   return null;
 };
 

@@ -2,14 +2,11 @@ import { MessageCircle, Mail, Phone, Globe2, ArrowRight } from "lucide-react";
 import yaidevLogo from "@/assets/yaidev-logo.jfif";
 
 const footerLinks = [
-  { label: "Home", href: "#home" },
-  { label: "About", href: "#about" },
-  { label: "Products", href: "#products" },
-  { label: "Services", href: "#services" },
-  { label: "Team", href: "#team" },
-  { label: "Projects", href: "#projects" },
-  { label: "Build Now", href: "#build-now" },
-  { label: "Contact", href: "#contact" },
+  { label: "Home", href: "/#home" },
+  { label: "About", href: "/#about" },
+  { label: "Features", href: "/#features" },
+  { label: "Pricing", href: "/#pricing" },
+  { label: "Contact", href: "/#contact" },
 ];
 
 const Footer = () => (
@@ -26,7 +23,7 @@ const Footer = () => (
           <p className="text-muted-foreground text-sm mt-1">Let's turn your vision into reality.</p>
         </div>
         <a
-          href="#contact"
+          href="/#contact"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-heading font-semibold text-sm bg-primary hover:shadow-lg hover:shadow-blue/20 transition-all duration-300"
         >
           Get Started <ArrowRight size={14} />

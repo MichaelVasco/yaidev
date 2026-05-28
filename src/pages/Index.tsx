@@ -24,11 +24,15 @@ const Index = () => {
   useEffect(() => {
     if (params.get("upgrade") === "1") {
       setShowPaywall(true);
-      params.delete("upgrade"); setParams(params, { replace: true });
+      const next = new URLSearchParams(params);
+      next.delete("upgrade");
+      setParams(next, { replace: true });
     }
     if (params.get("builder") === "1") {
-      params.delete("builder"); setParams(params, { replace: true });
       if (!loading) {
+        const next = new URLSearchParams(params);
+        next.delete("builder");
+        setParams(next, { replace: true });
         if (!user) navigate("/auth?redirect=/?builder=1");
         else setShowAiBuilder(true);
       }
@@ -37,7 +41,7 @@ const Index = () => {
 
   const openBuilder = () => {
     if (loading) return;
-    if (!user) { navigate("/auth?redirect=/"); return; }
+    if (!user) { navigate("/auth?redirect=/?builder=1"); return; }
     setShowAiBuilder(true);
   };
 
@@ -49,9 +53,11 @@ const Index = () => {
       <Hero />
       <AboutSection />
       <ProductsSection />
+      <div id="features" className="scroll-mt-20" aria-hidden="true" />
       <ServicesSection />
       <TeamSection />
       <ProjectsSection />
+      <div id="pricing" className="scroll-mt-20" aria-hidden="true" />
       <BuildNowSection onOpenAiBuilder={openBuilder} />
       <ContactSection />
       <Footer />
