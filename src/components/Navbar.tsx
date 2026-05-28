@@ -47,14 +47,19 @@ const Navbar = ({ onOpenBuilder }: { onOpenBuilder?: () => void }) => {
     const url = new URL(href, window.location.origin);
     const targetPath = url.pathname || "/";
     const targetHash = url.hash;
+    const target = `${targetPath}${url.search}${targetHash}`;
 
-    if (targetPath === "/" && targetHash) {
-      navigate(`${targetPath}${targetHash}`);
-      scrollToTarget(targetHash);
-      return;
+    try {
+      if (targetPath === "/" && targetHash) {
+        navigate(target);
+        scrollToTarget(targetHash);
+        return;
+      }
+
+      navigate(target);
+    } catch {
+      window.location.assign(target);
     }
-
-    navigate(`${targetPath}${url.search}${targetHash}`);
   };
 
   useEffect(() => {
