@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Sparkles, Send, CheckCircle2,
   Globe, Smartphone, Monitor, Gamepad2, Bot, ImageIcon,
   Hexagon, Video, Music, PenTool, Wand2, BrainCircuit,
   Download, Copy, RotateCcw, Crown, Coins,
-  Activity, Cpu, Zap, CircleDot, AlertCircle, Code2, ExternalLink
+  Activity, Cpu, Zap, CircleDot, AlertCircle, Code2, ExternalLink,
+  Paperclip, UploadCloud, X, FileText, FileArchive, FileAudio, FileVideo, File as FileIcon
 } from "lucide-react";
 import { useCredits } from "@/hooks/use-credits";
 import PaywallModal from "@/components/PaywallModal";
@@ -13,6 +14,52 @@ import FloatingParticles from "@/components/FloatingParticles";
 import AiAgents from "@/components/AiAgents";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+type Attachment = {
+  id: string;
+  name: string;
+  mime: string;
+  size: number;
+  kind: "image" | "text" | "pdf" | "audio" | "video" | "archive" | "doc" | "other";
+  dataUrl?: string;
+  textContent?: string;
+  previewUrl?: string;
+  progress: number;
+};
+
+const MAX_FILES = 6;
+const MAX_SIZE = 20 * 1024 * 1024;
+const TEXT_TRUNCATE = 60_000;
+
+const ACCEPT = "image/*,application/pdf,.doc,.docx,.txt,.md,.json,.csv,.xml,.yml,.yaml,.html,.css,.js,.ts,.tsx,.jsx,.py,.go,.rs,.java,.c,.cpp,.zip,.rar,.7z,audio/*,video/*";
+
+const kindFromMime = (m: string, name: string): Attachment["kind"] => {
+  if (m.startsWith("image/")) return "image";
+  if (m.startsWith("audio/")) return "audio";
+  if (m.startsWith("video/")) return "video";
+  if (m === "application/pdf") return "pdf";
+  if (/zip|rar|7z|x-tar|gzip/.test(m) || /\.(zip|rar|7z)$/i.test(name)) return "archive";
+  if (/word|officedocument|msword/.test(m) || /\.(docx?|rtf)$/i.test(name)) return "doc";
+  if (m.startsWith("text/") || /\.(txt|md|json|csv|xml|ya?ml|html?|css|m?js|tsx?|jsx|py|go|rs|java|c|cpp|sh|env)$/i.test(name)) return "text";
+  return "other";
+};
+
+const iconForKind = (k: Attachment["kind"]) => {
+  switch (k) {
+    case "image": return ImageIcon;
+    case "audio": return FileAudio;
+    case "video": return FileVideo;
+    case "archive": return FileArchive;
+    case "pdf":
+    case "doc":
+    case "text": return FileText;
+    default: return FileIcon;
+  }
+};
+
+const formatBytes = (b: number) =>
+  b < 1024 ? `${b} B` : b < 1048576 ? `${(b/1024).toFixed(1)} KB` : `${(b/1048576).toFixed(1)} MB`;
+
 
 
 const categories = [
@@ -75,6 +122,10 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
   const [videoStyle, setVideoStyle] = useState(VIDEO_STYLES[0]);
   const [videoDuration, setVideoDuration] = useState(VIDEO_DURATIONS[1]);
   const [videoResolution, setVideoResolution] = useState(VIDEO_RESOLUTIONS[1]);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   const { credits, vip, accessStatus, canUse, useCredit, pending, activateVip, submitPayment } = useCredits();
 
@@ -90,8 +141,69 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
   if (showAgents) return <AiAgents onBack={() => setShowAgents(false)} />;
 
 
+  const uploading = attachments.some((a) => a.progress < 100);
+
+  const readFileSmart = (file: File): Promise<Attachment> =>
+    new Promise((resolve, reject) => {
+      const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const kind = kindFromMime(file.type, file.name);
+      const base: Attachment = {
+        id, name: file.name, mime: file.type || "application/octet-stream",
+        size: file.size, kind, progress: 0,
+      };
+      if (kind === "image" || kind === "audio" || kind === "video") {
+        base.previewUrl = URL.createObjectURL(file);
+      }
+      setAttachments((prev) => [...prev, base]);
+
+      const reader = new FileReader();
+      reader.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const pct = Math.min(95, Math.round((e.loaded / e.total) * 95));
+          setAttachments((prev) => prev.map((a) => a.id === id ? { ...a, progress: pct } : a));
+        }
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.onload = () => {
+        const done: Attachment = { ...base, progress: 100, previewUrl: base.previewUrl };
+        if (kind === "image") done.dataUrl = reader.result as string;
+        else if (kind === "text") done.textContent = (reader.result as string).slice(0, TEXT_TRUNCATE);
+        setAttachments((prev) => prev.map((a) => a.id === id ? done : a));
+        resolve(done);
+      };
+      if (kind === "image") reader.readAsDataURL(file);
+      else if (kind === "text") reader.readAsText(file);
+      else {
+        // metadata-only for pdf/doc/zip/audio/video — mark complete after a tiny tick
+        setTimeout(() => {
+          setAttachments((prev) => prev.map((a) => a.id === id ? { ...a, progress: 100 } : a));
+          resolve({ ...base, progress: 100 });
+        }, 200);
+      }
+    });
+
+  const addFiles = async (files: FileList | File[]) => {
+    const list = Array.from(files);
+    if (attachments.length + list.length > MAX_FILES) {
+      toast.error(`Up to ${MAX_FILES} files allowed`); return;
+    }
+    for (const f of list) {
+      if (f.size > MAX_SIZE) { toast.error(`${f.name} exceeds 20MB limit`); continue; }
+      try { await readFileSmart(f); } catch (e) { console.error(e); toast.error(`Failed to read ${f.name}`); }
+    }
+  };
+
+  const removeAttachment = (id: string) => {
+    setAttachments((prev) => {
+      const a = prev.find((x) => x.id === id);
+      if (a?.previewUrl) URL.revokeObjectURL(a.previewUrl);
+      return prev.filter((x) => x.id !== id);
+    });
+  };
+
   const handleBuild = async () => {
     if (!prompt.trim() || !category) return;
+    if (uploading) { toast.error("Please wait for uploads to finish"); return; }
     if (!canUse) { setShowPaywall(true); return; }
     if (!useCredit()) { setShowPaywall(true); return; }
 
@@ -101,15 +213,21 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
     setResult(null);
     setImages([]);
 
-    // Smooth progress while AI works
     const tick = setInterval(() => {
       setProgress((p) => (p < 90 ? p + Math.max(1, Math.round((92 - p) / 12)) : p));
     }, 600);
 
+    // Build payload for AI: image data URLs + text content + metadata for the rest.
+    const payloadAttachments = attachments.map((a) => ({
+      name: a.name, mime: a.mime, size: a.size, kind: a.kind,
+      dataUrl: a.kind === "image" ? a.dataUrl : undefined,
+      textContent: a.kind === "text" ? a.textContent : undefined,
+    }));
+
     try {
       if (isImage) {
         const { data, error } = await supabase.functions.invoke("ai-image", {
-          body: { category, prompt, variants: 3 },
+          body: { category, prompt, variants: 3, attachments: payloadAttachments },
         });
         if (error) throw new Error(error.message || "Image generation failed");
         if ((data as any)?.error) throw new Error((data as any).error);
@@ -119,7 +237,7 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
           ? `${prompt}\n\nProduction specs:\n- Style: ${videoStyle}\n- Duration: ${videoDuration}\n- Resolution: ${videoResolution}`
           : prompt;
         const { data, error } = await supabase.functions.invoke("ai-generate", {
-          body: { category, prompt: fullPrompt },
+          body: { category, prompt: fullPrompt, attachments: payloadAttachments },
         });
 
         if (error) throw new Error(error.message || "AI generation failed");
@@ -141,7 +259,10 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
   const handleReset = () => {
     setPhase("select"); setCategory(null); setPrompt("");
     setProgress(0); setResult(null); setImages([]); setError(null);
+    attachments.forEach((a) => a.previewUrl && URL.revokeObjectURL(a.previewUrl));
+    setAttachments([]);
   };
+
 
   const copyJson = () => {
     if (!result) return;
@@ -281,14 +402,116 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
                   placeholder={`Describe the ${selectedCat?.label.toLowerCase()} you want to build...`}
                   className="w-full bg-transparent text-foreground placeholder:text-muted-foreground/50 focus:outline-none resize-none text-[15px] leading-relaxed" />
 
-                <div className="flex items-center justify-between pt-4 border-t border-border mt-2">
-                  <button onClick={handleReset} className="text-xs text-muted-foreground hover:text-foreground transition-colors">← Change category</button>
-                  <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={handleBuild} disabled={!prompt.trim()}
+                {/* ── ATTACHMENTS ── */}
+                <div className="mt-4 pt-4 border-t border-border">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept={ACCEPT}
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files) addFiles(e.target.files);
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                    }}
+                  />
+
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={(e) => {
+                      e.preventDefault(); setDragOver(false);
+                      if (e.dataTransfer.files?.length) addFiles(e.dataTransfer.files);
+                    }}
+                    onClick={() => fileInputRef.current?.click()}
+                    role="button"
+                    tabIndex={0}
+                    className={`relative cursor-pointer rounded-xl border-2 border-dashed transition-all duration-300 p-5 text-center overflow-hidden ${
+                      dragOver
+                        ? "border-blue/60 bg-blue/[0.06]"
+                        : "border-border hover:border-blue/40 hover:bg-blue/[0.03]"
+                    }`}
+                  >
+                    <div className="absolute inset-0 pointer-events-none opacity-50" style={{
+                      background: "radial-gradient(circle at 50% 0%, hsl(var(--color-blue)/0.08), transparent 60%)"
+                    }} />
+                    <div className="relative flex flex-col items-center gap-2">
+                      <div className="w-10 h-10 rounded-xl bg-blue/10 flex items-center justify-center">
+                        <UploadCloud size={18} className="text-blue" />
+                      </div>
+                      <p className="text-sm text-foreground font-medium">
+                        Upload files to help the AI better understand your request
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Drag &amp; drop or <span className="text-blue underline-offset-2">browse</span> · Images, PDF, DOCX, TXT, ZIP, Audio, Video
+                      </p>
+                      <p className="text-[10px] text-muted-foreground/70">
+                        Up to {MAX_FILES} files · Max 20MB each
+                      </p>
+                    </div>
+                  </div>
+
+                  {attachments.length > 0 && (
+                    <ul className="mt-3 space-y-2">
+                      {attachments.map((a) => {
+                        const Icon = iconForKind(a.kind);
+                        return (
+                          <li key={a.id} className="relative flex items-center gap-3 bg-card/60 border border-border rounded-lg p-2.5 pr-9 overflow-hidden">
+                            <div className="shrink-0 w-10 h-10 rounded-md bg-muted overflow-hidden flex items-center justify-center">
+                              {a.previewUrl && a.kind === "image" ? (
+                                <img src={a.previewUrl} alt={a.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <Icon size={16} className="text-blue" />
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-medium text-foreground truncate">{a.name}</p>
+                              <p className="text-[10px] text-muted-foreground">
+                                {formatBytes(a.size)} · {a.kind}
+                                {a.kind !== "image" && a.kind !== "text" && " · referenced as context"}
+                              </p>
+                              {a.progress < 100 && (
+                                <div className="h-1 bg-muted rounded-full overflow-hidden mt-1.5">
+                                  <div className="h-full bg-blue transition-all" style={{ width: `${a.progress}%` }} />
+                                </div>
+                              )}
+                            </div>
+                            {a.progress === 100 && (
+                              <CheckCircle2 size={14} className="text-teal absolute right-9 top-1/2 -translate-y-1/2" />
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removeAttachment(a.id)}
+                              aria-label={`Remove ${a.name}`}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition"
+                            >
+                              <X size={14} />
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between pt-4 border-t border-border mt-4">
+                  <div className="flex items-center gap-3">
+                    <button onClick={handleReset} className="text-xs text-muted-foreground hover:text-foreground transition-colors">← Change category</button>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground hover:text-blue transition-colors"
+                    >
+                      <Paperclip size={12} /> Attach
+                    </button>
+                  </div>
+                  <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={handleBuild} disabled={!prompt.trim() || uploading}
                     className="px-6 py-2.5 rounded-lg font-heading font-semibold text-sm flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed text-white hover-glow-blue transition-all duration-300"
                     style={{ background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple)))" }}>
-                    <Send size={14} /> Build with AI
+                    <Send size={14} /> {uploading ? "Uploading..." : "Build with AI"}
                   </motion.button>
                 </div>
+
               </div>
             </motion.div>
           )}

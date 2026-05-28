@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { category, prompt } = await req.json();
+    const { category, prompt, attachments = [] } = await req.json();
     if (!category || !prompt) {
       return new Response(JSON.stringify({ error: "Missing category or prompt" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -62,6 +62,24 @@ Deno.serve(async (req) => {
 
     const system = SYSTEM_PROMPTS[category] || SYSTEM_PROMPTS.other;
 
+    // Build multimodal user content from prompt + attachments
+    const userContent: any[] = [{ type: "text", text: prompt }];
+    const contextNotes: string[] = [];
+    for (const a of (attachments as any[]).slice(0, 8)) {
+      if (a?.kind === "image" && a?.dataUrl) {
+        userContent.push({ type: "image_url", image_url: { url: a.dataUrl } });
+        contextNotes.push(`- Image reference attached: ${a.name} (use its colors, style, composition where relevant).`);
+      } else if (a?.kind === "text" && a?.textContent) {
+        userContent.push({ type: "text", text: `\n\n--- Attached file: ${a.name} (${a.mime}) ---\n${a.textContent}\n--- end of ${a.name} ---` });
+        contextNotes.push(`- Text/code file attached: ${a.name} — analyze and incorporate.`);
+      } else if (a) {
+        contextNotes.push(`- ${a.kind?.toUpperCase() || "FILE"} attached: ${a.name} (${a.mime}, ${Math.round((a.size || 0) / 1024)} KB) — treat as a brand/reference asset the user expects you to honor.`);
+      }
+    }
+    if (contextNotes.length) {
+      userContent.unshift({ type: "text", text: `Attached reference materials (use them to ground your output):\n${contextNotes.join("\n")}\n\nUser brief:` });
+    }
+
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -72,11 +90,12 @@ Deno.serve(async (req) => {
         model: "google/gemini-2.5-pro",
         messages: [
           { role: "system", content: system + "\n\nReturn ONLY valid JSON. No markdown fences. No commentary." },
-          { role: "user", content: prompt },
+          { role: "user", content: userContent },
         ],
         response_format: { type: "json_object" },
       }),
     });
+
 
     if (!res.ok) {
       const status = res.status;

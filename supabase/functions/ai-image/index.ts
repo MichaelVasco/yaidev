@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { category, prompt, variants = 3 } = await req.json();
+    const { category, prompt, variants = 3, attachments = [] } = await req.json();
     if (!prompt) {
       return new Response(JSON.stringify({ error: "Missing prompt" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -35,8 +35,26 @@ Deno.serve(async (req) => {
 
     const n = Math.min(Math.max(variants, 1), 3);
 
-    const calls = Array.from({ length: n }, (_, i) =>
-      fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // Build reference parts from image + text attachments
+    const refParts: any[] = [];
+    const refNotes: string[] = [];
+    for (const a of (attachments as any[]).slice(0, 6)) {
+      if (a?.kind === "image" && a?.dataUrl) {
+        refParts.push({ type: "image_url", image_url: { url: a.dataUrl } });
+        refNotes.push(`Use the attached image "${a.name}" as a visual reference (style, palette, composition).`);
+      } else if (a?.kind === "text" && a?.textContent) {
+        refNotes.push(`Reference doc "${a.name}":\n${a.textContent.slice(0, 4000)}`);
+      } else if (a) {
+        refNotes.push(`Attached ${a.kind} "${a.name}" — honor as a brand/reference asset.`);
+      }
+    }
+
+    const calls = Array.from({ length: n }, (_, i) => {
+      const content: any[] = [
+        { type: "text", text: `${prompt}\n\n${augment}\n\n${variantAngles[i] ?? ""}${refNotes.length ? "\n\nReferences:\n" + refNotes.join("\n") : ""}` },
+        ...refParts,
+      ];
+      return fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -44,10 +62,7 @@ Deno.serve(async (req) => {
         },
         body: JSON.stringify({
           model: "google/gemini-2.5-flash-image",
-          messages: [{
-            role: "user",
-            content: `${prompt}\n\n${augment}\n\n${variantAngles[i] ?? ""}`,
-          }],
+          messages: [{ role: "user", content }],
           modalities: ["image", "text"],
         }),
       }).then(async (r) => {
@@ -59,8 +74,9 @@ Deno.serve(async (req) => {
         const j = await r.json();
         const url = j.choices?.[0]?.message?.images?.[0]?.image_url?.url;
         return { url };
-      }),
-    );
+      });
+    });
+
 
     const results = await Promise.all(calls);
     const firstErr = results.find((r: any) => r.error);
