@@ -35,6 +35,7 @@ const ScrollToHash = () => {
 
   useEffect(() => {
     const handleNativeHashClick = (event: MouseEvent) => {
+      if (event.defaultPrevented) return;
       const target = event.target as HTMLElement | null;
       const anchor = target?.closest<HTMLAnchorElement>('a[href^="#"], a[href^="/#"]');
       if (!anchor) return;
