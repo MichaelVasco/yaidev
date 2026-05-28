@@ -402,14 +402,116 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
                   placeholder={`Describe the ${selectedCat?.label.toLowerCase()} you want to build...`}
                   className="w-full bg-transparent text-foreground placeholder:text-muted-foreground/50 focus:outline-none resize-none text-[15px] leading-relaxed" />
 
-                <div className="flex items-center justify-between pt-4 border-t border-border mt-2">
-                  <button onClick={handleReset} className="text-xs text-muted-foreground hover:text-foreground transition-colors">← Change category</button>
-                  <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={handleBuild} disabled={!prompt.trim()}
+                {/* ── ATTACHMENTS ── */}
+                <div className="mt-4 pt-4 border-t border-border">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept={ACCEPT}
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files) addFiles(e.target.files);
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                    }}
+                  />
+
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={(e) => {
+                      e.preventDefault(); setDragOver(false);
+                      if (e.dataTransfer.files?.length) addFiles(e.dataTransfer.files);
+                    }}
+                    onClick={() => fileInputRef.current?.click()}
+                    role="button"
+                    tabIndex={0}
+                    className={`relative cursor-pointer rounded-xl border-2 border-dashed transition-all duration-300 p-5 text-center overflow-hidden ${
+                      dragOver
+                        ? "border-blue/60 bg-blue/[0.06]"
+                        : "border-border hover:border-blue/40 hover:bg-blue/[0.03]"
+                    }`}
+                  >
+                    <div className="absolute inset-0 pointer-events-none opacity-50" style={{
+                      background: "radial-gradient(circle at 50% 0%, hsl(var(--color-blue)/0.08), transparent 60%)"
+                    }} />
+                    <div className="relative flex flex-col items-center gap-2">
+                      <div className="w-10 h-10 rounded-xl bg-blue/10 flex items-center justify-center">
+                        <UploadCloud size={18} className="text-blue" />
+                      </div>
+                      <p className="text-sm text-foreground font-medium">
+                        Upload files to help the AI better understand your request
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Drag &amp; drop or <span className="text-blue underline-offset-2">browse</span> · Images, PDF, DOCX, TXT, ZIP, Audio, Video
+                      </p>
+                      <p className="text-[10px] text-muted-foreground/70">
+                        Up to {MAX_FILES} files · Max 20MB each
+                      </p>
+                    </div>
+                  </div>
+
+                  {attachments.length > 0 && (
+                    <ul className="mt-3 space-y-2">
+                      {attachments.map((a) => {
+                        const Icon = iconForKind(a.kind);
+                        return (
+                          <li key={a.id} className="relative flex items-center gap-3 bg-card/60 border border-border rounded-lg p-2.5 pr-9 overflow-hidden">
+                            <div className="shrink-0 w-10 h-10 rounded-md bg-muted overflow-hidden flex items-center justify-center">
+                              {a.previewUrl && a.kind === "image" ? (
+                                <img src={a.previewUrl} alt={a.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <Icon size={16} className="text-blue" />
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-medium text-foreground truncate">{a.name}</p>
+                              <p className="text-[10px] text-muted-foreground">
+                                {formatBytes(a.size)} · {a.kind}
+                                {a.kind !== "image" && a.kind !== "text" && " · referenced as context"}
+                              </p>
+                              {a.progress < 100 && (
+                                <div className="h-1 bg-muted rounded-full overflow-hidden mt-1.5">
+                                  <div className="h-full bg-blue transition-all" style={{ width: `${a.progress}%` }} />
+                                </div>
+                              )}
+                            </div>
+                            {a.progress === 100 && (
+                              <CheckCircle2 size={14} className="text-teal absolute right-9 top-1/2 -translate-y-1/2" />
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removeAttachment(a.id)}
+                              aria-label={`Remove ${a.name}`}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition"
+                            >
+                              <X size={14} />
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between pt-4 border-t border-border mt-4">
+                  <div className="flex items-center gap-3">
+                    <button onClick={handleReset} className="text-xs text-muted-foreground hover:text-foreground transition-colors">← Change category</button>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground hover:text-blue transition-colors"
+                    >
+                      <Paperclip size={12} /> Attach
+                    </button>
+                  </div>
+                  <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={handleBuild} disabled={!prompt.trim() || uploading}
                     className="px-6 py-2.5 rounded-lg font-heading font-semibold text-sm flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed text-white hover-glow-blue transition-all duration-300"
                     style={{ background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple)))" }}>
-                    <Send size={14} /> Build with AI
+                    <Send size={14} /> {uploading ? "Uploading..." : "Build with AI"}
                   </motion.button>
                 </div>
+
               </div>
             </motion.div>
           )}
