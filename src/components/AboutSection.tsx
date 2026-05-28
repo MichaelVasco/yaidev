@@ -11,7 +11,7 @@ const highlights = [
 
 const AboutSection = () => (
   <section id="about" className="py-28 bg-white section-divider relative">
-    <div className="absolute inset-0 tech-grid-bg opacity-50" />
+    <div className="absolute inset-0 tech-grid-bg opacity-50 pointer-events-none" />
     <div className="container mx-auto px-4 lg:px-8 relative z-10">
       {/* Section Header */}
       <motion.div

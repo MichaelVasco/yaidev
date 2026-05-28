@@ -64,6 +64,14 @@
   body {
     @apply bg-background text-foreground font-body antialiased;
   }
+  button, a, [role="button"], input, textarea, select, label {
+    pointer-events: auto;
+  }
+  button, a, [role="button"] {
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: hsl(var(--primary) / 0.16);
+  }
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading;
   }

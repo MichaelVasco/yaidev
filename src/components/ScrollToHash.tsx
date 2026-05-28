@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 /**
  * Handles two things:
@@ -9,21 +9,25 @@ import { useLocation } from "react-router-dom";
  */
 const ScrollToHash = () => {
   const { pathname, hash } = useLocation();
+  const navigate = useNavigate();
+
+  const scrollToHash = (targetHash: string) => {
+    const id = targetHash.replace("#", "");
+    let attempts = 0;
+    const tryScroll = () => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+      if (attempts++ < 24) window.setTimeout(tryScroll, 50);
+    };
+    tryScroll();
+  };
 
   useEffect(() => {
     if (hash) {
-      const id = hash.replace("#", "");
-      // Retry briefly in case the target section mounts after route change.
-      let attempts = 0;
-      const tryScroll = () => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth", block: "start" });
-          return;
-        }
-        if (attempts++ < 20) setTimeout(tryScroll, 60);
-      };
-      tryScroll();
+      scrollToHash(hash);
     } else {
       window.scrollTo({ top: 0, left: 0 });
     }
@@ -31,22 +35,20 @@ const ScrollToHash = () => {
 
   useEffect(() => {
     const handleNativeHashClick = (event: MouseEvent) => {
+      if (event.defaultPrevented) return;
       const target = event.target as HTMLElement | null;
       const anchor = target?.closest<HTMLAnchorElement>('a[href^="#"], a[href^="/#"]');
       if (!anchor) return;
       const url = new URL(anchor.href, window.location.origin);
       if (url.origin !== window.location.origin || !url.hash) return;
-      if (window.location.pathname !== url.pathname) return;
-      const el = document.getElementById(url.hash.slice(1));
-      if (!el) return;
       event.preventDefault();
-      window.history.pushState(null, "", `${url.pathname}${url.hash}`);
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      navigate(`${url.pathname}${url.search}${url.hash}`);
+      window.setTimeout(() => scrollToHash(url.hash), 0);
     };
 
     document.addEventListener("click", handleNativeHashClick);
     return () => document.removeEventListener("click", handleNativeHashClick);
-  }, []);
+  }, [navigate]);
 
   return null;
 };

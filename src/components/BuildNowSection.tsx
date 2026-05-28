@@ -4,9 +4,9 @@ import FloatingParticles from "@/components/FloatingParticles";
 
 const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) => (
   <section id="build-now" className="relative overflow-hidden" style={{ background: "linear-gradient(180deg, hsl(214 40% 96%), hsl(210 40% 98%), hsl(214 40% 96%))" }}>
-    <div className="absolute inset-0 tech-grid-bg opacity-40" />
+    <div className="absolute inset-0 tech-grid-bg opacity-40 pointer-events-none" />
     <FloatingParticles count={30} className="opacity-30" />
-    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-blue/[0.05] blur-[100px]" />
+    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-blue/[0.05] blur-[100px] pointer-events-none" />
 
     <div className="container mx-auto px-4 lg:px-8 py-32 relative z-10">
       <motion.div
@@ -44,9 +44,9 @@ const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) =
           transition={{ duration: 0.5 }}
           whileHover={{ y: -6 }}
           whileTap={{ scale: 0.98 }}
-          className="group relative bg-white rounded-2xl border border-border p-10 flex flex-col text-center cursor-pointer shadow-sm hover:shadow-lg hover:shadow-blue/8 hover:border-primary/20 transition-all duration-500 overflow-hidden"
+          className="group relative bg-white rounded-2xl border border-border p-10 flex flex-col text-center cursor-pointer pointer-events-auto touch-manipulation shadow-sm hover:shadow-lg hover:shadow-blue/8 hover:border-primary/20 transition-all duration-500 overflow-hidden"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-blue/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
           
           <div className="relative z-10">
             <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/15 transition-colors duration-300">
@@ -80,9 +80,9 @@ const BuildNowSection = ({ onOpenAiBuilder }: { onOpenAiBuilder: () => void }) =
           transition={{ duration: 0.5, delay: 0.1 }}
           whileHover={{ y: -6 }}
           whileTap={{ scale: 0.98 }}
-          className="group relative bg-white rounded-2xl border border-border p-10 flex flex-col text-center cursor-pointer shadow-sm hover:shadow-lg hover:shadow-blue/8 hover:border-primary/20 transition-all duration-500 overflow-hidden"
+          className="group relative bg-white rounded-2xl border border-border p-10 flex flex-col text-center cursor-pointer pointer-events-auto touch-manipulation shadow-sm hover:shadow-lg hover:shadow-blue/8 hover:border-primary/20 transition-all duration-500 overflow-hidden"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-purple/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-br from-purple/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
           
           <div className="relative z-10">
             <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/15 transition-colors duration-300">

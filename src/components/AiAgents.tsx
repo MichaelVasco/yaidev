@@ -294,7 +294,7 @@ const AiAgents = ({ onBack }: { onBack: () => void }) => {
               <div className="text-center mb-10">
                 <motion.div animate={{ scale: [1, 1.08, 1] }} transition={{ duration: 3, repeat: Infinity }} className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 relative" style={{ background: "linear-gradient(135deg, hsl(var(--color-blue) / 0.15), hsl(var(--color-purple) / 0.15))" }}>
                   <Bot className="text-blue" size={28} />
-                  <div className="absolute inset-0 rounded-2xl glow-blue opacity-50" />
+                  <div className="absolute inset-0 rounded-2xl glow-blue opacity-50 pointer-events-none" />
                 </motion.div>
                 <h1 className="text-3xl md:text-4xl font-heading font-bold text-foreground mb-3">AI <span className="text-gradient">Agents</span></h1>
                 <p className="text-muted-foreground">Create, train, deploy your agents to desktop, browser, or YAIDEV</p>
