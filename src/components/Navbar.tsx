@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import { Menu, X, Coins, LogIn, LayoutDashboard, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import yaidevLogo from "@/assets/yaidev-logo.jfif";
 import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
-  { label: "Home", href: "#home" },
-  { label: "About", href: "#about" },
-  { label: "Products", href: "#products" },
-  { label: "Services", href: "#services" },
-  { label: "Team", href: "#team" },
-  { label: "Projects", href: "#projects" },
-  { label: "Contact Us", href: "#contact" },
+  { label: "Home", hash: "home" },
+  { label: "About", hash: "about" },
+  { label: "Products", hash: "products" },
+  { label: "Services", hash: "services" },
+  { label: "Team", hash: "team" },
+  { label: "Projects", hash: "projects" },
+  { label: "Contact Us", hash: "contact" },
 ];
 
 const Navbar = ({ onOpenBuilder }: { onOpenBuilder?: () => void }) => {
@@ -20,6 +20,7 @@ const Navbar = ({ onOpenBuilder }: { onOpenBuilder?: () => void }) => {
   const [scrolled, setScrolled] = useState(false);
   const { user, credits, totalCoinsAvailable } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -27,10 +28,23 @@ const Navbar = ({ onOpenBuilder }: { onOpenBuilder?: () => void }) => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const goToSection = (hash: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsOpen(false);
+    if (location.pathname !== "/") {
+      navigate(`/#${hash}`);
+    } else {
+      document.getElementById(hash)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      // keep URL hash in sync without full reload
+      window.history.replaceState(null, "", `#${hash}`);
+    }
+  };
+
   const handleBuild = (e: React.MouseEvent) => {
     e.preventDefault(); setIsOpen(false);
-    if (onOpenBuilder) onOpenBuilder();
-    else document.querySelector("#build-now")?.scrollIntoView({ behavior: "smooth" });
+    if (onOpenBuilder) { onOpenBuilder(); return; }
+    if (location.pathname !== "/") { navigate("/?builder=1"); return; }
+    document.querySelector("#build-now")?.scrollIntoView({ behavior: "smooth" });
   };
 
   const CoinBadge = () => (
@@ -59,7 +73,7 @@ const Navbar = ({ onOpenBuilder }: { onOpenBuilder?: () => void }) => {
 
           <div className="hidden lg:flex items-center gap-1">
             {navItems.map((item) => (
-              <a key={item.label} href={item.href} className="relative px-4 py-2 rounded-lg text-[13px] font-semibold text-muted-foreground hover:text-foreground transition-all duration-300 group">
+              <a key={item.label} href={`/#${item.hash}`} onClick={goToSection(item.hash)} className="relative px-4 py-2 rounded-lg text-[13px] font-semibold text-muted-foreground hover:text-foreground transition-all duration-300 group">
                 <span className="relative z-10">{item.label}</span>
                 <span className="absolute inset-0 rounded-lg bg-primary/0 group-hover:bg-primary/8 transition-all" />
               </a>
@@ -98,7 +112,7 @@ const Navbar = ({ onOpenBuilder }: { onOpenBuilder?: () => void }) => {
             className="lg:hidden overflow-hidden bg-white/95 backdrop-blur-2xl border-b border-border">
             <div className="px-4 py-4 flex flex-col gap-1">
               {navItems.map((item) => (
-                <a key={item.label} href={item.href} onClick={() => setIsOpen(false)}
+                <a key={item.label} href={`/#${item.hash}`} onClick={goToSection(item.hash)}
                   className="block w-full px-4 py-3 rounded-xl text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-primary/8 transition-all">
                   {item.label}
                 </a>

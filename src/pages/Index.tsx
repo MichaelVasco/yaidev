@@ -26,7 +26,14 @@ const Index = () => {
       setShowPaywall(true);
       params.delete("upgrade"); setParams(params, { replace: true });
     }
-  }, [params, setParams]);
+    if (params.get("builder") === "1") {
+      params.delete("builder"); setParams(params, { replace: true });
+      if (!loading) {
+        if (!user) navigate("/auth?redirect=/?builder=1");
+        else setShowAiBuilder(true);
+      }
+    }
+  }, [params, setParams, user, loading, navigate]);
 
   const openBuilder = () => {
     if (loading) return;
