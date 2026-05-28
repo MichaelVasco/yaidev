@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Sparkles, Send, CheckCircle2,
   Globe, Smartphone, Monitor, Gamepad2, Bot, ImageIcon,
   Hexagon, Video, Music, PenTool, Wand2, BrainCircuit,
   Download, Copy, RotateCcw, Crown, Coins,
-  Activity, Cpu, Zap, CircleDot, AlertCircle, Code2, ExternalLink
+  Activity, Cpu, Zap, CircleDot, AlertCircle, Code2, ExternalLink,
+  Paperclip, UploadCloud, X, FileText, FileArchive, FileAudio, FileVideo, File as FileIcon
 } from "lucide-react";
 import { useCredits } from "@/hooks/use-credits";
 import PaywallModal from "@/components/PaywallModal";
@@ -13,6 +14,52 @@ import FloatingParticles from "@/components/FloatingParticles";
 import AiAgents from "@/components/AiAgents";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+type Attachment = {
+  id: string;
+  name: string;
+  mime: string;
+  size: number;
+  kind: "image" | "text" | "pdf" | "audio" | "video" | "archive" | "doc" | "other";
+  dataUrl?: string;
+  textContent?: string;
+  previewUrl?: string;
+  progress: number;
+};
+
+const MAX_FILES = 6;
+const MAX_SIZE = 20 * 1024 * 1024;
+const TEXT_TRUNCATE = 60_000;
+
+const ACCEPT = "image/*,application/pdf,.doc,.docx,.txt,.md,.json,.csv,.xml,.yml,.yaml,.html,.css,.js,.ts,.tsx,.jsx,.py,.go,.rs,.java,.c,.cpp,.zip,.rar,.7z,audio/*,video/*";
+
+const kindFromMime = (m: string, name: string): Attachment["kind"] => {
+  if (m.startsWith("image/")) return "image";
+  if (m.startsWith("audio/")) return "audio";
+  if (m.startsWith("video/")) return "video";
+  if (m === "application/pdf") return "pdf";
+  if (/zip|rar|7z|x-tar|gzip/.test(m) || /\.(zip|rar|7z)$/i.test(name)) return "archive";
+  if (/word|officedocument|msword/.test(m) || /\.(docx?|rtf)$/i.test(name)) return "doc";
+  if (m.startsWith("text/") || /\.(txt|md|json|csv|xml|ya?ml|html?|css|m?js|tsx?|jsx|py|go|rs|java|c|cpp|sh|env)$/i.test(name)) return "text";
+  return "other";
+};
+
+const iconForKind = (k: Attachment["kind"]) => {
+  switch (k) {
+    case "image": return ImageIcon;
+    case "audio": return FileAudio;
+    case "video": return FileVideo;
+    case "archive": return FileArchive;
+    case "pdf":
+    case "doc":
+    case "text": return FileText;
+    default: return FileIcon;
+  }
+};
+
+const formatBytes = (b: number) =>
+  b < 1024 ? `${b} B` : b < 1048576 ? `${(b/1024).toFixed(1)} KB` : `${(b/1048576).toFixed(1)} MB`;
+
 
 
 const categories = [
