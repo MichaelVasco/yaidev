@@ -201,6 +201,41 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
     });
   };
 
+  const invokeWithRetry = async (
+    fn: "ai-image" | "ai-generate",
+    payload: any,
+    maxAttempts = 2,
+  ): Promise<any> => {
+    let lastErrorMsg = "Generation failed. Please try again.";
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const { data, error } = await supabase.functions.invoke(fn, { body: payload });
+        if (error) {
+          // Supabase wraps non-2xx as a generic message — translate it.
+          lastErrorMsg = "Temporary server issue. Please try again.";
+          console.warn(`[${fn}] invoke error attempt ${attempt}:`, error);
+        } else if ((data as any)?.error) {
+          lastErrorMsg = (data as any).error;
+          const fallback = (data as any).fallback === true;
+          if (!fallback) throw new Error(lastErrorMsg);
+          console.warn(`[${fn}] fallback error attempt ${attempt}:`, lastErrorMsg);
+        } else {
+          return data;
+        }
+      } catch (e: any) {
+        // Hard error (thrown from non-fallback path) — bubble up immediately.
+        if (e?.message && e.message !== "Temporary server issue. Please try again.") throw e;
+        lastErrorMsg = e?.message || lastErrorMsg;
+        console.warn(`[${fn}] thrown attempt ${attempt}:`, e);
+      }
+      if (attempt < maxAttempts) {
+        toast.message("AI generation failed. Retrying…");
+        await new Promise((r) => setTimeout(r, 1200));
+      }
+    }
+    throw new Error(lastErrorMsg);
+  };
+
   const handleBuild = async () => {
     if (!prompt.trim() || !category) return;
     if (uploading) { toast.error("Please wait for uploads to finish"); return; }
@@ -217,7 +252,6 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
       setProgress((p) => (p < 90 ? p + Math.max(1, Math.round((92 - p) / 12)) : p));
     }, 600);
 
-    // Build payload for AI: image data URLs + text content + metadata for the rest.
     const payloadAttachments = attachments.map((a) => ({
       name: a.name, mime: a.mime, size: a.size, kind: a.kind,
       dataUrl: a.kind === "image" ? a.dataUrl : undefined,
@@ -226,30 +260,26 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
 
     try {
       if (isImage) {
-        const { data, error } = await supabase.functions.invoke("ai-image", {
-          body: { category, prompt, variants: 3, attachments: payloadAttachments },
+        const data = await invokeWithRetry("ai-image", {
+          category, prompt, variants: 3, attachments: payloadAttachments,
         });
-        if (error) throw new Error(error.message || "Image generation failed");
-        if ((data as any)?.error) throw new Error((data as any).error);
         setImages((data as any).images || []);
       } else {
         const fullPrompt = isVideo
           ? `${prompt}\n\nProduction specs:\n- Style: ${videoStyle}\n- Duration: ${videoDuration}\n- Resolution: ${videoResolution}`
           : prompt;
-        const { data, error } = await supabase.functions.invoke("ai-generate", {
-          body: { category, prompt: fullPrompt, attachments: payloadAttachments },
+        const data = await invokeWithRetry("ai-generate", {
+          category, prompt: fullPrompt, attachments: payloadAttachments,
         });
-
-        if (error) throw new Error(error.message || "AI generation failed");
-        if ((data as any)?.error) throw new Error((data as any).error);
         setResult((data as any).result);
       }
       setProgress(100);
       setTimeout(() => setPhase("result"), 350);
     } catch (e: any) {
-      console.error(e);
-      setError(e?.message || "Something went wrong. Please try again.");
-      toast.error(e?.message || "Generation failed");
+      console.error("[handleBuild] failed:", e);
+      const msg = e?.message || "Temporary server issue. Please try again.";
+      setError(msg);
+      toast.error(msg);
       setPhase("prompt");
     } finally {
       clearInterval(tick);
