@@ -111,7 +111,7 @@ const Navbar = ({ onOpenBuilder }: { onOpenBuilder?: () => void }) => {
       <AnimatePresence>
         {isOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}
-            className="lg:hidden fixed left-0 right-0 top-16 bottom-0 bg-white/98 backdrop-blur-2xl border-t border-border overflow-y-auto">
+            className="lg:hidden fixed left-0 right-0 top-16 bottom-0 bg-card/95 backdrop-blur-2xl border-t border-border overflow-y-auto">
             <div className="px-4 py-5 flex flex-col gap-1 min-h-full">
               {navItems.map((item) => (
                 <a key={item.label} href={item.href} onClick={closeMenu}
