@@ -14,16 +14,199 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          coins_granted: number
+          created_at: string
+          expires_at: string | null
+          id: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          started_at: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          coins_granted?: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          started_at?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          coins_granted?: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          started_at?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount_cents: number
+          coins_added: number
+          created_at: string
+          currency: string
+          id: string
+          plan: Database["public"]["Enums"]["subscription_plan"] | null
+          provider: Database["public"]["Enums"]["payment_provider"]
+          reference: string | null
+          status: Database["public"]["Enums"]["transaction_status"]
+          user_id: string
+        }
+        Insert: {
+          amount_cents?: number
+          coins_added?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          plan?: Database["public"]["Enums"]["subscription_plan"] | null
+          provider: Database["public"]["Enums"]["payment_provider"]
+          reference?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          coins_added?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          plan?: Database["public"]["Enums"]["subscription_plan"] | null
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          reference?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_credits: {
+        Row: {
+          created_at: string
+          daily_free_remaining: number
+          daily_reset_at: string
+          id: string
+          lifetime_unlimited: boolean
+          paid_balance: number
+          total_used: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          daily_free_remaining?: number
+          daily_reset_at?: string
+          id?: string
+          lifetime_unlimited?: boolean
+          paid_balance?: number
+          total_used?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          daily_free_remaining?: number
+          daily_reset_at?: string
+          id?: string
+          lifetime_unlimited?: boolean
+          paid_balance?: number
+          total_used?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      activate_plan: {
+        Args: {
+          _amount_cents: number
+          _currency: string
+          _plan: Database["public"]["Enums"]["subscription_plan"]
+          _provider: Database["public"]["Enums"]["payment_provider"]
+          _reference: string
+          _user_id: string
+        }
+        Returns: Json
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      spend_credit: { Args: { _user_id: string }; Returns: Json }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
+      payment_provider: "paystack" | "stripe" | "flutterwave" | "demo"
+      subscription_plan: "pro" | "enterprise" | "forever"
+      subscription_status: "active" | "cancelled" | "expired"
+      transaction_status: "pending" | "success" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +333,12 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+      payment_provider: ["paystack", "stripe", "flutterwave", "demo"],
+      subscription_plan: ["pro", "enterprise", "forever"],
+      subscription_status: ["active", "cancelled", "expired"],
+      transaction_status: ["pending", "success", "failed"],
+    },
   },
 } as const
