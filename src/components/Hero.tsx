@@ -35,10 +35,12 @@ const Hero = () => {
     return () => observer.disconnect();
   }, [entered]);
 
-  const handleEnter = () => {
+  const handleEnter = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
     setEntered(true);
     setTimeout(() => {
       document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
+      window.history.pushState(null, "", "/#about");
     }, 700);
   };
 
@@ -118,7 +120,8 @@ const Hero = () => {
         </svg>
 
         {/* Portal door */}
-        <motion.button
+        <motion.a
+          href="/#about"
           onClick={handleEnter}
           className="relative z-10 w-56 sm:w-64 h-72 sm:h-80 rounded-2xl flex flex-col items-center justify-center cursor-pointer animate-portal-glow group focus:outline-none"
           style={{
@@ -163,7 +166,7 @@ const Hero = () => {
           ].map((cls, i) => (
             <div key={i} className={`absolute ${cls} w-6 h-6 border-white/30`} />
           ))}
-        </motion.button>
+        </motion.a>
       </motion.div>
 
       <motion.div
