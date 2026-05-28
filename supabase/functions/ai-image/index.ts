@@ -65,8 +65,7 @@ Deno.serve(async (req) => {
           messages: [{ role: "user", content }],
           modalities: ["image", "text"],
         }),
-      })
-
+      }).then(async (r) => {
         if (!r.ok) {
           const t = await r.text();
           console.error("img gen failed", r.status, t);
@@ -75,8 +74,9 @@ Deno.serve(async (req) => {
         const j = await r.json();
         const url = j.choices?.[0]?.message?.images?.[0]?.image_url?.url;
         return { url };
-      }),
-    );
+      });
+    });
+
 
     const results = await Promise.all(calls);
     const firstErr = results.find((r: any) => r.error);
