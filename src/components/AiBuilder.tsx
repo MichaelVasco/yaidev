@@ -416,6 +416,18 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
                     }}
                   />
 
+                  {/* Prominent Attach File button — visible on mobile + desktop */}
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-blue/30 bg-blue/[0.06] hover:bg-blue/10 hover:border-blue/50 text-blue font-medium text-sm transition-all shadow-[0_0_20px_-8px_hsl(var(--color-blue)/0.5)] hover:shadow-[0_0_28px_-6px_hsl(var(--color-blue)/0.7)]"
+                  >
+                    <Paperclip size={16} />
+                    <span>Attach File</span>
+                    <span className="text-[11px] text-muted-foreground font-normal hidden sm:inline">· for AI reference</span>
+                  </button>
+                  <p className="mt-2 text-[11px] text-muted-foreground">Attach files for AI reference — PNG, JPG, PDF, DOCX, TXT, MP4, MP3, ZIP</p>
+
                   <div
                     onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                     onDragLeave={() => setDragOver(false)}
@@ -426,7 +438,7 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
                     onClick={() => fileInputRef.current?.click()}
                     role="button"
                     tabIndex={0}
-                    className={`relative cursor-pointer rounded-xl border-2 border-dashed transition-all duration-300 p-5 text-center overflow-hidden ${
+                    className={`mt-3 relative cursor-pointer rounded-xl border-2 border-dashed transition-all duration-300 p-5 text-center overflow-hidden ${
                       dragOver
                         ? "border-blue/60 bg-blue/[0.06]"
                         : "border-border hover:border-blue/40 hover:bg-blue/[0.03]"
@@ -440,10 +452,10 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
                         <UploadCloud size={18} className="text-blue" />
                       </div>
                       <p className="text-sm text-foreground font-medium">
-                        Upload files to help the AI better understand your request
+                        Attach files for AI reference
                       </p>
                       <p className="text-[11px] text-muted-foreground">
-                        Drag &amp; drop or <span className="text-blue underline-offset-2">browse</span> · Images, PDF, DOCX, TXT, ZIP, Audio, Video
+                        Drag &amp; drop or <span className="text-blue underline-offset-2">browse</span> · PNG, JPG, PDF, DOCX, TXT, MP4, MP3, ZIP
                       </p>
                       <p className="text-[10px] text-muted-foreground/70">
                         Up to {MAX_FILES} files · Max 20MB each
@@ -494,17 +506,8 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-border mt-4">
-                  <div className="flex items-center gap-3">
-                    <button onClick={handleReset} className="text-xs text-muted-foreground hover:text-foreground transition-colors">← Change category</button>
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground hover:text-blue transition-colors"
-                    >
-                      <Paperclip size={12} /> Attach
-                    </button>
-                  </div>
+                <div className="flex items-center justify-between pt-4 border-t border-border mt-4 gap-3 flex-wrap">
+                  <button onClick={handleReset} className="text-xs text-muted-foreground hover:text-foreground transition-colors">← Change category</button>
                   <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={handleBuild} disabled={!prompt.trim() || uploading}
                     className="px-6 py-2.5 rounded-lg font-heading font-semibold text-sm flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed text-white hover-glow-blue transition-all duration-300"
                     style={{ background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple)))" }}>
@@ -513,6 +516,7 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
                 </div>
 
               </div>
+
             </motion.div>
           )}
 
