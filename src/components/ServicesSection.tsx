@@ -21,10 +21,10 @@ const services = [
 
 const ServicesSection = () => (
   <section id="services" className="py-28 bg-white section-divider relative overflow-hidden">
-    <div className="absolute inset-0 tech-grid-bg opacity-30" />
+    <div className="absolute inset-0 tech-grid-bg opacity-30 pointer-events-none" />
     <FloatingParticles count={25} className="opacity-40" />
-    <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-blue/[0.04] blur-[80px]" />
-    <div className="absolute top-0 left-0 w-[400px] h-[400px] rounded-full bg-teal/[0.03] blur-[100px]" />
+    <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-blue/[0.04] blur-[80px] pointer-events-none" />
+    <div className="absolute top-0 left-0 w-[400px] h-[400px] rounded-full bg-teal/[0.03] blur-[100px] pointer-events-none" />
 
     <div className="container mx-auto px-4 lg:px-8 relative z-10">
       <motion.div
@@ -85,7 +85,7 @@ const ServicesSection = () => (
             <span className="text-primary font-semibold">AI-powered creation tools</span> and{" "}
             <span className="text-primary font-semibold">human expert execution</span>."
           </p>
-          <a href="#build-now" className="inline-flex items-center gap-2 mt-5 text-primary text-sm font-semibold hover:gap-3 transition-all">
+          <a href="/#build-now" className="inline-flex items-center gap-2 mt-5 text-primary text-sm font-semibold hover:gap-3 transition-all cursor-pointer pointer-events-auto touch-manipulation">
             Start Building <ArrowRight size={14} />
           </a>
         </div>
