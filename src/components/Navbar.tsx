@@ -73,7 +73,7 @@ const Navbar = ({ onOpenBuilder }: { onOpenBuilder?: () => void }) => {
 
           <div className="hidden lg:flex items-center gap-1">
             {navItems.map((item) => (
-              <a key={item.label} href={item.href} className="relative px-4 py-2 rounded-lg text-[13px] font-semibold text-muted-foreground hover:text-foreground transition-all duration-300 group">
+              <a key={item.label} href={`/#${item.hash}`} onClick={goToSection(item.hash)} className="relative px-4 py-2 rounded-lg text-[13px] font-semibold text-muted-foreground hover:text-foreground transition-all duration-300 group">
                 <span className="relative z-10">{item.label}</span>
                 <span className="absolute inset-0 rounded-lg bg-primary/0 group-hover:bg-primary/8 transition-all" />
               </a>
@@ -112,7 +112,7 @@ const Navbar = ({ onOpenBuilder }: { onOpenBuilder?: () => void }) => {
             className="lg:hidden overflow-hidden bg-white/95 backdrop-blur-2xl border-b border-border">
             <div className="px-4 py-4 flex flex-col gap-1">
               {navItems.map((item) => (
-                <a key={item.label} href={item.href} onClick={() => setIsOpen(false)}
+                <a key={item.label} href={`/#${item.hash}`} onClick={goToSection(item.hash)}
                   className="block w-full px-4 py-3 rounded-xl text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-primary/8 transition-all">
                   {item.label}
                 </a>
