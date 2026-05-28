@@ -14,6 +14,7 @@ import FloatingParticles from "@/components/FloatingParticles";
 import AiAgents from "@/components/AiAgents";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 type Attachment = {
   id: string;
@@ -127,7 +128,8 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
 
-  const { credits, vip, accessStatus, canUse, useCredit, pending, activateVip, submitPayment } = useCredits();
+  const { user, accessStatus, canUse, spendCredit, coinsRemaining, isLifetime } = useCredits();
+  const navigate = useNavigate();
 
   const selectedCat = categories.find((c) => c.value === category);
   const isImage = category && imageCategories.includes(category);
@@ -239,8 +241,10 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
   const handleBuild = async () => {
     if (!prompt.trim() || !category) return;
     if (uploading) { toast.error("Please wait for uploads to finish"); return; }
+    if (!user) { navigate("/auth?redirect=/"); return; }
     if (!canUse) { setShowPaywall(true); return; }
-    if (!useCredit()) { setShowPaywall(true); return; }
+    const spend = await spendCredit();
+    if (!spend.ok) { setShowPaywall(true); return; }
 
     setPhase("loading");
     setProgress(5);
@@ -342,9 +346,9 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
           </div>
 
           <button onClick={() => setShowPaywall(true)} className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card card-glow hover:border-blue/20 transition-all text-sm">
-            {vip ? (<><Crown size={14} className="text-blue" /><span className="font-medium text-blue">VIP</span></>)
+            {isLifetime ? (<><Crown size={14} className="text-blue" /><span className="font-medium text-blue">Unlimited</span></>)
               : accessStatus === "subscribed" ? (<><Sparkles size={14} className="text-purple" /><span className="font-medium text-purple">Pro</span></>)
-              : (<><Coins size={14} className={credits > 5 ? "text-blue" : "text-destructive"} /><span className={`font-medium ${credits > 5 ? "text-foreground" : "text-destructive"}`}>{credits} credits</span></>)}
+              : (<><Coins size={14} className={coinsRemaining > 5 ? "text-blue" : "text-destructive"} /><span className={`font-medium ${coinsRemaining > 5 ? "text-foreground" : "text-destructive"}`}>{coinsRemaining} coins</span></>)}
           </button>
         </div>
       </div>
@@ -691,7 +695,7 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
         </AnimatePresence>
       </div>
 
-      <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} accessStatus={accessStatus} credits={credits} pending={pending} onActivateVip={activateVip} onSubmitPayment={submitPayment} />
+      <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} reason={accessStatus === "locked" ? "out_of_coins" : "upgrade"} />
     </div>
   );
 };

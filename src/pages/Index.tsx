@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import AboutSection from "@/components/AboutSection";
@@ -10,26 +11,44 @@ import BuildNowSection from "@/components/BuildNowSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
 import AiBuilder from "@/components/AiBuilder";
+import PaywallModal from "@/components/PaywallModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const [showAiBuilder, setShowAiBuilder] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
 
-  if (showAiBuilder) {
-    return <AiBuilder onBack={() => setShowAiBuilder(false)} />;
-  }
+  useEffect(() => {
+    if (params.get("upgrade") === "1") {
+      setShowPaywall(true);
+      params.delete("upgrade"); setParams(params, { replace: true });
+    }
+  }, [params, setParams]);
+
+  const openBuilder = () => {
+    if (loading) return;
+    if (!user) { navigate("/auth?redirect=/"); return; }
+    setShowAiBuilder(true);
+  };
+
+  if (showAiBuilder) return <AiBuilder onBack={() => setShowAiBuilder(false)} />;
 
   return (
     <div className="min-h-screen">
-      <Navbar />
+      <Navbar onOpenBuilder={openBuilder} />
       <Hero />
       <AboutSection />
       <ProductsSection />
       <ServicesSection />
       <TeamSection />
       <ProjectsSection />
-      <BuildNowSection onOpenAiBuilder={() => setShowAiBuilder(true)} />
+      <BuildNowSection onOpenAiBuilder={openBuilder} />
       <ContactSection />
       <Footer />
+      <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
     </div>
   );
 };
