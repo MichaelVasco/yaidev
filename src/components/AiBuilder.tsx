@@ -122,6 +122,10 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
   const [videoStyle, setVideoStyle] = useState(VIDEO_STYLES[0]);
   const [videoDuration, setVideoDuration] = useState(VIDEO_DURATIONS[1]);
   const [videoResolution, setVideoResolution] = useState(VIDEO_RESOLUTIONS[1]);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   const { credits, vip, accessStatus, canUse, useCredit, pending, activateVip, submitPayment } = useCredits();
 
