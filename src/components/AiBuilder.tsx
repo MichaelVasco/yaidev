@@ -361,7 +361,7 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
               <div className="text-center mb-12">
                 <motion.div animate={{ scale: [1, 1.08, 1] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }} className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 relative" style={{ background: "linear-gradient(135deg, hsl(var(--color-blue) / 0.15), hsl(var(--color-purple) / 0.15))" }}>
                   <Sparkles className="text-blue" size={28} />
-                  <div className="absolute inset-0 rounded-2xl glow-blue opacity-50" />
+                  <div className="absolute inset-0 rounded-2xl glow-blue opacity-50 pointer-events-none" />
                 </motion.div>
                 <h1 className="text-3xl md:text-4xl font-heading font-bold text-foreground mb-3">AI Powered <span className="text-gradient">Builder</span></h1>
                 <p className="text-muted-foreground flex items-center justify-center gap-2"><AiPulse color="teal" />Select what you want to create</p>
@@ -557,10 +557,10 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
           {phase === "loading" && (
             <motion.div key="loading" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-lg mx-auto text-center">
               <div className="relative w-24 h-24 mx-auto mb-10">
-                <motion.div animate={{ rotate: 360 }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }} className="absolute inset-0 rounded-full border-2 border-blue/20 border-t-blue" />
-                <motion.div animate={{ rotate: -360 }} transition={{ duration: 6, repeat: Infinity, ease: "linear" }} className="absolute inset-2 rounded-full border-2 border-purple/20 border-b-purple" />
-                <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }} className="absolute inset-4 rounded-full border-2 border-teal/20 border-t-teal" />
-                <div className="absolute inset-0 flex items-center justify-center">
+                <motion.div animate={{ rotate: 360 }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }} className="absolute inset-0 rounded-full border-2 border-blue/20 border-t-blue pointer-events-none" />
+                <motion.div animate={{ rotate: -360 }} transition={{ duration: 6, repeat: Infinity, ease: "linear" }} className="absolute inset-2 rounded-full border-2 border-purple/20 border-b-purple pointer-events-none" />
+                <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }} className="absolute inset-4 rounded-full border-2 border-teal/20 border-t-teal pointer-events-none" />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity }} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(var(--color-blue) / 0.3), hsl(var(--color-purple) / 0.3))" }}>
                     <Cpu size={16} className="text-blue" />
                   </motion.div>
