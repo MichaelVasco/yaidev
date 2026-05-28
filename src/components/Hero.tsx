@@ -39,8 +39,8 @@ const Hero = () => {
     event.preventDefault();
     setEntered(true);
     setTimeout(() => {
-      document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
       window.history.pushState(null, "", "/#about");
+      document.getElementById("about")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 700);
   };
 
@@ -50,13 +50,13 @@ const Hero = () => {
       className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden"
       style={{ background: "linear-gradient(180deg, hsl(214 40% 96%), hsl(210 40% 98%))" }}
     >
-      <div className="absolute inset-0 tech-grid-bg" />
+      <div className="absolute inset-0 tech-grid-bg pointer-events-none" />
       <FloatingParticles count={50} />
 
       {/* Soft blue gradient orbs */}
-      <div className="absolute top-1/4 -left-32 w-96 h-96 rounded-full bg-blue/[0.06] blur-3xl" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 rounded-full bg-purple/[0.05] blur-3xl" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-teal/[0.03] blur-[120px]" />
+      <div className="absolute top-1/4 -left-32 w-96 h-96 rounded-full bg-blue/[0.06] blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 -right-32 w-96 h-96 rounded-full bg-purple/[0.05] blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-teal/[0.03] blur-[120px] pointer-events-none" />
 
       {/* Glow lines */}
       {[
@@ -68,7 +68,7 @@ const Hero = () => {
       ].map((line, i) => (
         <div
           key={i}
-          className="absolute animate-pulse-line"
+          className="absolute animate-pulse-line pointer-events-none"
           style={{
             width: '1px',
             height: `${line.h}px`,
@@ -89,7 +89,7 @@ const Hero = () => {
         {floatingIcons.map(({ Icon, x, y, delay, color }, i) => (
           <motion.div
             key={i}
-            className={`absolute ${color}/50 hidden sm:block`}
+            className={`absolute ${color}/50 hidden sm:block pointer-events-none`}
             initial={{ opacity: 0, scale: 0 }}
             animate={{
               opacity: [0.3, 0.6, 0.3],
@@ -123,7 +123,7 @@ const Hero = () => {
         <motion.a
           href="/#about"
           onClick={handleEnter}
-          className="relative z-10 w-56 sm:w-64 h-72 sm:h-80 rounded-2xl flex flex-col items-center justify-center cursor-pointer animate-portal-glow group focus:outline-none"
+          className="relative z-10 w-56 sm:w-64 h-72 sm:h-80 rounded-2xl flex flex-col items-center justify-center cursor-pointer pointer-events-auto touch-manipulation animate-portal-glow group focus:outline-none"
           style={{
             background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple) / 0.9))",
           }}
@@ -164,7 +164,7 @@ const Hero = () => {
             'bottom-0 left-0 border-b border-l rounded-bl-2xl',
             'bottom-0 right-0 border-b border-r rounded-br-2xl',
           ].map((cls, i) => (
-            <div key={i} className={`absolute ${cls} w-6 h-6 border-white/30`} />
+            <div key={i} className={`absolute ${cls} w-6 h-6 border-white/30 pointer-events-none`} />
           ))}
         </motion.a>
       </motion.div>
