@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import { Menu, X, Coins, LogIn, LayoutDashboard, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import yaidevLogo from "@/assets/yaidev-logo.jfif";
 import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
-  { label: "Home", href: "#home" },
-  { label: "About", href: "#about" },
-  { label: "Products", href: "#products" },
-  { label: "Services", href: "#services" },
-  { label: "Team", href: "#team" },
-  { label: "Projects", href: "#projects" },
-  { label: "Contact Us", href: "#contact" },
+  { label: "Home", hash: "home" },
+  { label: "About", hash: "about" },
+  { label: "Products", hash: "products" },
+  { label: "Services", hash: "services" },
+  { label: "Team", hash: "team" },
+  { label: "Projects", hash: "projects" },
+  { label: "Contact Us", hash: "contact" },
 ];
 
 const Navbar = ({ onOpenBuilder }: { onOpenBuilder?: () => void }) => {
@@ -20,6 +20,7 @@ const Navbar = ({ onOpenBuilder }: { onOpenBuilder?: () => void }) => {
   const [scrolled, setScrolled] = useState(false);
   const { user, credits, totalCoinsAvailable } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -27,10 +28,23 @@ const Navbar = ({ onOpenBuilder }: { onOpenBuilder?: () => void }) => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const goToSection = (hash: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsOpen(false);
+    if (location.pathname !== "/") {
+      navigate(`/#${hash}`);
+    } else {
+      document.getElementById(hash)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      // keep URL hash in sync without full reload
+      window.history.replaceState(null, "", `#${hash}`);
+    }
+  };
+
   const handleBuild = (e: React.MouseEvent) => {
     e.preventDefault(); setIsOpen(false);
-    if (onOpenBuilder) onOpenBuilder();
-    else document.querySelector("#build-now")?.scrollIntoView({ behavior: "smooth" });
+    if (onOpenBuilder) { onOpenBuilder(); return; }
+    if (location.pathname !== "/") { navigate("/?builder=1"); return; }
+    document.querySelector("#build-now")?.scrollIntoView({ behavior: "smooth" });
   };
 
   const CoinBadge = () => (
