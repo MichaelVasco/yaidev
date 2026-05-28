@@ -141,8 +141,69 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
   if (showAgents) return <AiAgents onBack={() => setShowAgents(false)} />;
 
 
+  const uploading = attachments.some((a) => a.progress < 100);
+
+  const readFileSmart = (file: File): Promise<Attachment> =>
+    new Promise((resolve, reject) => {
+      const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const kind = kindFromMime(file.type, file.name);
+      const base: Attachment = {
+        id, name: file.name, mime: file.type || "application/octet-stream",
+        size: file.size, kind, progress: 0,
+      };
+      if (kind === "image" || kind === "audio" || kind === "video") {
+        base.previewUrl = URL.createObjectURL(file);
+      }
+      setAttachments((prev) => [...prev, base]);
+
+      const reader = new FileReader();
+      reader.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const pct = Math.min(95, Math.round((e.loaded / e.total) * 95));
+          setAttachments((prev) => prev.map((a) => a.id === id ? { ...a, progress: pct } : a));
+        }
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.onload = () => {
+        const done: Attachment = { ...base, progress: 100, previewUrl: base.previewUrl };
+        if (kind === "image") done.dataUrl = reader.result as string;
+        else if (kind === "text") done.textContent = (reader.result as string).slice(0, TEXT_TRUNCATE);
+        setAttachments((prev) => prev.map((a) => a.id === id ? done : a));
+        resolve(done);
+      };
+      if (kind === "image") reader.readAsDataURL(file);
+      else if (kind === "text") reader.readAsText(file);
+      else {
+        // metadata-only for pdf/doc/zip/audio/video — mark complete after a tiny tick
+        setTimeout(() => {
+          setAttachments((prev) => prev.map((a) => a.id === id ? { ...a, progress: 100 } : a));
+          resolve({ ...base, progress: 100 });
+        }, 200);
+      }
+    });
+
+  const addFiles = async (files: FileList | File[]) => {
+    const list = Array.from(files);
+    if (attachments.length + list.length > MAX_FILES) {
+      toast.error(`Up to ${MAX_FILES} files allowed`); return;
+    }
+    for (const f of list) {
+      if (f.size > MAX_SIZE) { toast.error(`${f.name} exceeds 20MB limit`); continue; }
+      try { await readFileSmart(f); } catch (e) { console.error(e); toast.error(`Failed to read ${f.name}`); }
+    }
+  };
+
+  const removeAttachment = (id: string) => {
+    setAttachments((prev) => {
+      const a = prev.find((x) => x.id === id);
+      if (a?.previewUrl) URL.revokeObjectURL(a.previewUrl);
+      return prev.filter((x) => x.id !== id);
+    });
+  };
+
   const handleBuild = async () => {
     if (!prompt.trim() || !category) return;
+    if (uploading) { toast.error("Please wait for uploads to finish"); return; }
     if (!canUse) { setShowPaywall(true); return; }
     if (!useCredit()) { setShowPaywall(true); return; }
 
@@ -152,15 +213,21 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
     setResult(null);
     setImages([]);
 
-    // Smooth progress while AI works
     const tick = setInterval(() => {
       setProgress((p) => (p < 90 ? p + Math.max(1, Math.round((92 - p) / 12)) : p));
     }, 600);
 
+    // Build payload for AI: image data URLs + text content + metadata for the rest.
+    const payloadAttachments = attachments.map((a) => ({
+      name: a.name, mime: a.mime, size: a.size, kind: a.kind,
+      dataUrl: a.kind === "image" ? a.dataUrl : undefined,
+      textContent: a.kind === "text" ? a.textContent : undefined,
+    }));
+
     try {
       if (isImage) {
         const { data, error } = await supabase.functions.invoke("ai-image", {
-          body: { category, prompt, variants: 3 },
+          body: { category, prompt, variants: 3, attachments: payloadAttachments },
         });
         if (error) throw new Error(error.message || "Image generation failed");
         if ((data as any)?.error) throw new Error((data as any).error);
@@ -170,7 +237,7 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
           ? `${prompt}\n\nProduction specs:\n- Style: ${videoStyle}\n- Duration: ${videoDuration}\n- Resolution: ${videoResolution}`
           : prompt;
         const { data, error } = await supabase.functions.invoke("ai-generate", {
-          body: { category, prompt: fullPrompt },
+          body: { category, prompt: fullPrompt, attachments: payloadAttachments },
         });
 
         if (error) throw new Error(error.message || "AI generation failed");
@@ -192,7 +259,10 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
   const handleReset = () => {
     setPhase("select"); setCategory(null); setPrompt("");
     setProgress(0); setResult(null); setImages([]); setError(null);
+    attachments.forEach((a) => a.previewUrl && URL.revokeObjectURL(a.previewUrl));
+    setAttachments([]);
   };
+
 
   const copyJson = () => {
     if (!result) return;
