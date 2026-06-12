@@ -9,6 +9,10 @@ import NotFound from "./pages/NotFound.tsx";
 import Auth from "./pages/Auth.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
+import SocialMediaManager from "./pages/SocialMediaManager.tsx";
+import EmailManager from "./pages/EmailManager.tsx";
+import OfficeManager from "./pages/OfficeManager.tsx";
+import CompanyManager from "./pages/CompanyManager.tsx";
 import ScrollToHash from "./components/ScrollToHash";
 
 const queryClient = new QueryClient();
@@ -26,6 +30,10 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/social" element={<SocialMediaManager />} />
+            <Route path="/email" element={<EmailManager />} />
+            <Route path="/office" element={<OfficeManager />} />
+            <Route path="/company" element={<CompanyManager />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

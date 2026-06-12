@@ -6,7 +6,8 @@ import {
   Hexagon, Video, Music, PenTool, Wand2, BrainCircuit,
   Download, Copy, RotateCcw, Crown, Coins,
   Activity, Cpu, Zap, CircleDot, AlertCircle, Code2, ExternalLink,
-  Paperclip, UploadCloud, X, FileText, FileArchive, FileAudio, FileVideo, File as FileIcon
+  Paperclip, UploadCloud, X, FileText, FileArchive, FileAudio, FileVideo, File as FileIcon,
+  Share2, Mail, Building2
 } from "lucide-react";
 import { useCredits } from "@/hooks/use-credits";
 import PaywallModal from "@/components/PaywallModal";
@@ -76,6 +77,10 @@ const categories = [
   { value: "audios", label: "Create Audios", icon: Music, color: "blue" },
   { value: "designs", label: "Create Designs", icon: PenTool, color: "purple" },
   { value: "other", label: "Create Any Other Thing", icon: Wand2, color: "teal" },
+  { value: "social", label: "Social Media Manager", icon: Share2, color: "blue" },
+  { value: "email", label: "Email Manager", icon: Mail, color: "purple" },
+  { value: "office", label: "Microsoft Office Manager", icon: FileText, color: "teal" },
+  { value: "company", label: "Company Manager", icon: Building2, color: "cyan" },
 ] as const;
 
 type Category = (typeof categories)[number]["value"];
@@ -137,6 +142,10 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
 
   const handleSelect = (val: Category) => {
     if (val === "agents") { setShowAgents(true); return; }
+    if (val === "social") { navigate("/social"); return; }
+    if (val === "email") { navigate("/email"); return; }
+    if (val === "office") { navigate("/office"); return; }
+    if (val === "company") { navigate("/company"); return; }
     setCategory(val); setPhase("prompt");
   };
 
