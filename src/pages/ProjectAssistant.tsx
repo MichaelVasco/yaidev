@@ -403,9 +403,6 @@ function ChatPanel({
 
     try {
       const history = [...msgs, ins as Conversation].slice(-12).map((m) => ({ role: m.role, content: m.content }));
-      const result = await callAiService("company" as any, "daily", { prompt: content, profile: project, context: { history } })
-        .catch(async () => callAiService("assistant" as any, "chat", { prompt: content, profile: project, context: { history } }));
-      // ^ first call uses wrong key intentionally as a fallback shape guard — try real action:
       const real = await callAiService("assistant" as any, "chat", { prompt: content, profile: project, context: { history } });
       const reply = real?.reply || real?.summary || JSON.stringify(real, null, 2);
       const { data: ins2 } = await sb.from("project_conversations").insert({
