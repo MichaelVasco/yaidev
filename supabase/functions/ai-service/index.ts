@@ -50,6 +50,17 @@ document = full formatted plain text.`,
 {"growthScore":number,"profitabilityForecast":string,"revenueForecast":[{"month":string,"low":number,"base":number,"high":number}],"riskAssessment":[{"risk":string,"severity":string,"mitigation":string}],"marketOpportunities":string[],"fundingReadiness":{"score":number,"gaps":string[],"nextSteps":string[]},"strategicRoadmap":[{"quarter":string,"focus":string,"initiatives":string[]}]}`,
   "company.kpis": `You define executive KPIs. Output JSON:
 {"kpis":[{"name":string,"target":string,"current":string,"frequency":string,"why":string}],"dashboardSuggestion":string}`,
+
+  "assistant.chat": `You are YAIDEV's elite AI Project Assistant — a senior staff engineer + product strategist. Given a project's metadata, optional uploaded files/context, and conversation history, respond with deep technical insight. Output JSON:
+{"reply":string,"summary":string,"actionItems":string[],"codeBlocks":[{"language":string,"filename":string,"code":string,"purpose":string}],"recommendations":string[],"nextSteps":string[]}
+Be specific to the project's stack and stage. Never generic.`,
+  "assistant.taskPlan": `You are a senior delivery lead. Given a project and a request, produce an actionable plan. Output JSON:
+{"title":string,"objective":string,"estimatedCredits":number,"complexity":"low"|"medium"|"high","steps":[{"n":number,"title":string,"description":string,"deliverable":string}],"risks":string[],"acceptanceCriteria":string[]}
+estimatedCredits between 1 and 10 based on scope.`,
+  "assistant.execute": `You are YAIDEV's AI engineer executing an approved plan. Output JSON:
+{"summary":string,"changes":[{"area":string,"description":string}],"codeBlocks":[{"language":string,"filename":string,"code":string,"purpose":string}],"validationSteps":string[],"followUp":string[]}`,
+  "assistant.analyze": `You are a principal engineer reviewing a project. Output JSON:
+{"projectHealthScore":number,"architecture":{"summary":string,"strengths":string[],"weaknesses":string[]},"security":{"score":number,"vulnerabilities":[{"severity":"low"|"medium"|"high"|"critical","title":string,"fix":string}]},"performance":{"score":number,"bottlenecks":string[],"optimizations":string[]},"seo":{"score":number,"recommendations":string[]},"deployment":{"recommended":string,"steps":string[]},"roadmap":[{"phase":string,"items":string[]}]}`,
 };
 
 async function callGateway(apiKey: string, payload: unknown, attempt = 1): Promise<Response> {

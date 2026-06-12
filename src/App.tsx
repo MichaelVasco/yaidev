@@ -13,6 +13,7 @@ import SocialMediaManager from "./pages/SocialMediaManager.tsx";
 import EmailManager from "./pages/EmailManager.tsx";
 import OfficeManager from "./pages/OfficeManager.tsx";
 import CompanyManager from "./pages/CompanyManager.tsx";
+import ProjectAssistant from "./pages/ProjectAssistant.tsx";
 import ScrollToHash from "./components/ScrollToHash";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/email" element={<EmailManager />} />
             <Route path="/office" element={<OfficeManager />} />
             <Route path="/company" element={<CompanyManager />} />
+            <Route path="/assistant" element={<ProjectAssistant />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

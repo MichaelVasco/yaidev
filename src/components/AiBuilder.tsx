@@ -7,7 +7,7 @@ import {
   Download, Copy, RotateCcw, Crown, Coins,
   Activity, Cpu, Zap, CircleDot, AlertCircle, Code2, ExternalLink,
   Paperclip, UploadCloud, X, FileText, FileArchive, FileAudio, FileVideo, File as FileIcon,
-  Share2, Mail, Building2
+  Share2, Mail, Building2, Rocket
 } from "lucide-react";
 import { useCredits } from "@/hooks/use-credits";
 import PaywallModal from "@/components/PaywallModal";
@@ -81,6 +81,7 @@ const categories = [
   { value: "email", label: "Email Manager", icon: Mail, color: "purple" },
   { value: "office", label: "Microsoft Office Manager", icon: FileText, color: "teal" },
   { value: "company", label: "Company Manager", icon: Building2, color: "cyan" },
+  { value: "assistant", label: "AI Project Assistant", icon: Rocket, color: "blue" },
 ] as const;
 
 type Category = (typeof categories)[number]["value"];
@@ -146,6 +147,7 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
     if (val === "email") { navigate("/email"); return; }
     if (val === "office") { navigate("/office"); return; }
     if (val === "company") { navigate("/company"); return; }
+    if (val === "assistant") { navigate("/assistant"); return; }
     setCategory(val); setPhase("prompt");
   };
 

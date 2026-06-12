@@ -151,6 +151,207 @@ export type Database = {
         }
         Relationships: []
       }
+      project_conversations: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          metadata: Json
+          project_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          project_id: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          project_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_conversations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_files: {
+        Row: {
+          content: string | null
+          created_at: string
+          file_name: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          metadata: Json
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          file_name: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          metadata?: Json
+          project_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          metadata?: Json
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_files_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_tasks: {
+        Row: {
+          created_at: string
+          description: string | null
+          estimated_credits: number
+          id: string
+          plan: Json
+          project_id: string
+          result: Json
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          estimated_credits?: number
+          id?: string
+          plan?: Json
+          project_id: string
+          result?: Json
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          estimated_credits?: number
+          id?: string
+          plan?: Json
+          project_id?: string
+          result?: Json
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          api_endpoint: string | null
+          api_key_encrypted: string | null
+          category: string | null
+          challenges: string | null
+          cloud_provider: string | null
+          created_at: string
+          database_type: string | null
+          description: string | null
+          framework: string | null
+          github_url: string | null
+          gitlab_url: string | null
+          goals: string | null
+          id: string
+          language: string | null
+          metadata: Json
+          name: string
+          project_url: string | null
+          stage: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          api_endpoint?: string | null
+          api_key_encrypted?: string | null
+          category?: string | null
+          challenges?: string | null
+          cloud_provider?: string | null
+          created_at?: string
+          database_type?: string | null
+          description?: string | null
+          framework?: string | null
+          github_url?: string | null
+          gitlab_url?: string | null
+          goals?: string | null
+          id?: string
+          language?: string | null
+          metadata?: Json
+          name: string
+          project_url?: string | null
+          stage?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          api_endpoint?: string | null
+          api_key_encrypted?: string | null
+          category?: string | null
+          challenges?: string | null
+          cloud_provider?: string | null
+          created_at?: string
+          database_type?: string | null
+          description?: string | null
+          framework?: string | null
+          github_url?: string | null
+          gitlab_url?: string | null
+          goals?: string | null
+          id?: string
+          language?: string | null
+          metadata?: Json
+          name?: string
+          project_url?: string | null
+          stage?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       service_items: {
         Row: {
           content: Json
