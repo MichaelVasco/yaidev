@@ -104,7 +104,7 @@ export default function OfficeManager() {
 
   return (
     <ServiceLayout title="Microsoft Office Manager" subtitle={profile.config.organization || profile.config.email} icon={<FileText size={20} />}>
-      <TabBar value={tab} onChange={setTab} tabs={[
+      <TabBar value={tab} onChange={(v) => setTab(v as Tab)} tabs={[
         { value: "tools", label: "Tools", icon: <Sparkles size={14} /> },
         { value: "history", label: `History (${items.length})`, icon: <FileText size={14} /> },
         { value: "activity", label: "Activity", icon: <Activity size={14} /> },
