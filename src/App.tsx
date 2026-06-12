@@ -13,6 +13,7 @@ import SocialMediaManager from "./pages/SocialMediaManager.tsx";
 import EmailManager from "./pages/EmailManager.tsx";
 import OfficeManager from "./pages/OfficeManager.tsx";
 import CompanyManager from "./pages/CompanyManager.tsx";
+import ProjectAssistant from "./pages/ProjectAssistant.tsx";
 import ScrollToHash from "./components/ScrollToHash";
 
 const queryClient = new QueryClient();
