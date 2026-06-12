@@ -81,6 +81,7 @@ const categories = [
   { value: "email", label: "Email Manager", icon: Mail, color: "purple" },
   { value: "office", label: "Microsoft Office Manager", icon: FileText, color: "teal" },
   { value: "company", label: "Company Manager", icon: Building2, color: "cyan" },
+  { value: "assistant", label: "AI Project Assistant", icon: Rocket, color: "blue" },
 ] as const;
 
 type Category = (typeof categories)[number]["value"];
