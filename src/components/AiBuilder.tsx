@@ -147,6 +147,7 @@ const AiBuilder = ({ onBack }: { onBack: () => void }) => {
     if (val === "email") { navigate("/email"); return; }
     if (val === "office") { navigate("/office"); return; }
     if (val === "company") { navigate("/company"); return; }
+    if (val === "assistant") { navigate("/assistant"); return; }
     setCategory(val); setPhase("prompt");
   };
 
