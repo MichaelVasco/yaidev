@@ -35,6 +35,7 @@ const App = () => (
             <Route path="/email" element={<EmailManager />} />
             <Route path="/office" element={<OfficeManager />} />
             <Route path="/company" element={<CompanyManager />} />
+            <Route path="/assistant" element={<ProjectAssistant />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
