@@ -101,6 +101,13 @@ const Footer = () => (
           San Francisco · Lagos · London · Toronto · Sydney
         </p>
       </div>
+
+      {/* Faith Statement */}
+      <div className="border-t border-border/50 py-6 text-center">
+        <p className="text-muted-foreground/70 text-[11px] sm:text-xs leading-relaxed max-w-3xl mx-auto font-body">
+          The God Of Chosen Is Fully In Charge Of This Technology, YAIDEV, In Jesus Christ Name. AMEN.
+        </p>
+      </div>
     </div>
   </footer>
 );
