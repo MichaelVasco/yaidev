@@ -61,6 +61,9 @@ const Dashboard = () => {
   }
 
   const planLabel = subscription?.plan === "forever" ? "Forever (Unlimited)"
+    : subscription?.plan === "business" ? "Business"
+    : subscription?.plan === "professional" ? "Professional"
+    : subscription?.plan === "starter" ? "Starter"
     : subscription?.plan === "enterprise" ? "Enterprise"
     : subscription?.plan === "pro" ? "Pro"
     : "Free";
@@ -141,7 +144,10 @@ const Dashboard = () => {
               <p className="text-xs text-muted-foreground mt-1">Renews / expires {new Date(subscription.expires_at).toLocaleDateString()}</p>
             )}
             {!subscription && (
-              <Link to="/?upgrade=1" className="text-xs text-primary font-medium hover:underline mt-2 inline-block">Upgrade plan →</Link>
+              <Link to="/pricing" className="text-xs text-primary font-medium hover:underline mt-2 inline-block">Upgrade plan →</Link>
+            )}
+            {subscription && (
+              <Link to="/pricing" className="text-xs text-primary font-medium hover:underline mt-2 inline-block">Change plan →</Link>
             )}
           </Card>
 
