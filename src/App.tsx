@@ -14,6 +14,9 @@ import EmailManager from "./pages/EmailManager.tsx";
 import OfficeManager from "./pages/OfficeManager.tsx";
 import CompanyManager from "./pages/CompanyManager.tsx";
 import ProjectAssistant from "./pages/ProjectAssistant.tsx";
+import Pricing from "./pages/Pricing.tsx";
+import PaymentSuccess from "./pages/PaymentSuccess.tsx";
+import Admin from "./pages/Admin.tsx";
 import ScrollToHash from "./components/ScrollToHash";
 
 const queryClient = new QueryClient();
@@ -36,6 +39,9 @@ const App = () => (
             <Route path="/office" element={<OfficeManager />} />
             <Route path="/company" element={<CompanyManager />} />
             <Route path="/assistant" element={<ProjectAssistant />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/payment/success" element={<PaymentSuccess />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
