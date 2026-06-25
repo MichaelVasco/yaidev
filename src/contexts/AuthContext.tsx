@@ -19,7 +19,7 @@ export interface Credits {
 
 export interface Subscription {
   id: string;
-  plan: "pro" | "enterprise" | "forever";
+  plan: "pro" | "enterprise" | "forever" | "starter" | "professional" | "business";
   status: "active" | "cancelled" | "expired";
   expires_at: string | null;
   coins_granted: number;
