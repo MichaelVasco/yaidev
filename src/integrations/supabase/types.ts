@@ -432,6 +432,48 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_plans: {
+        Row: {
+          created_at: string
+          currency: string
+          features: Json
+          id: string
+          is_active: boolean
+          monthly_credits: number
+          name: string
+          price_cents: number
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          features?: Json
+          id?: string
+          is_active?: boolean
+          monthly_credits?: number
+          name: string
+          price_cents: number
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          features?: Json
+          id?: string
+          is_active?: boolean
+          monthly_credits?: number
+          name?: string
+          price_cents?: number
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           coins_granted: number
@@ -580,6 +622,10 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_adjust_credits: {
+        Args: { _delta: number; _reason: string; _target_user: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -592,7 +638,13 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user"
       payment_provider: "paystack" | "stripe" | "flutterwave" | "demo"
-      subscription_plan: "pro" | "enterprise" | "forever"
+      subscription_plan:
+        | "pro"
+        | "enterprise"
+        | "forever"
+        | "starter"
+        | "professional"
+        | "business"
       subscription_status: "active" | "cancelled" | "expired"
       transaction_status: "pending" | "success" | "failed"
     }
@@ -724,7 +776,14 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user"],
       payment_provider: ["paystack", "stripe", "flutterwave", "demo"],
-      subscription_plan: ["pro", "enterprise", "forever"],
+      subscription_plan: [
+        "pro",
+        "enterprise",
+        "forever",
+        "starter",
+        "professional",
+        "business",
+      ],
       subscription_status: ["active", "cancelled", "expired"],
       transaction_status: ["pending", "success", "failed"],
     },
