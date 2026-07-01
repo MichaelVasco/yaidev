@@ -106,10 +106,11 @@ async function handleFailure(admin: any, data: any, type: string) {
   const { userId, planSlug } = await resolveUserAndPlan(admin, data);
   if (!userId) return;
 
-  await admin.from("subscriptions")
-    .update({ status: type === "invoice.payment_failed" ? "past_due" : "cancelled" })
-    .eq("user_id", userId)
-    .eq("plan", planSlug || "");
+  const q = admin.from("subscriptions")
+    .update({ status: type === "invoice.payment_failed" ? "expired" : "cancelled" })
+    .eq("user_id", userId);
+  if (planSlug) q.eq("plan", planSlug);
+  await q;
 
   await admin.from("notifications").insert({
     user_id: userId,
