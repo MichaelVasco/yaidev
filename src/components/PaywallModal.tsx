@@ -67,7 +67,7 @@ const PaywallModal = ({ open, onClose, reason = "upgrade" }: Props) => {
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
           onClick={(e) => e.stopPropagation()}
-          className="bg-card rounded-2xl border border-border shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto"
+          className="bg-card rounded-2xl border border-border shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-y-auto"
         >
           <div className="flex items-center justify-between p-5 border-b border-border">
             <div className="flex items-center gap-2">
