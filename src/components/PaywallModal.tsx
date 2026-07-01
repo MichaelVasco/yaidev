@@ -90,18 +90,18 @@ const PaywallModal = ({ open, onClose, reason = "upgrade" }: Props) => {
             {loading ? (
               <div className="py-12 flex justify-center"><Loader2 className="animate-spin text-muted-foreground" /></div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {plans.map((p, i) => {
-                  const Icon = icons[i] || Sparkles;
-                  const popular = p.slug === "professional";
+                  const Icon = icons[i % icons.length] || Sparkles;
+                  const popular = p.slug === "business";
                   return (
                     <div key={p.id} className={`rounded-xl border-2 p-4 flex flex-col ${popular ? "border-primary bg-primary/5" : "border-border"}`}>
                       <div className="flex items-center gap-2 mb-1">
                         <Icon size={16} className="text-primary" />
-                        <p className="font-heading font-bold text-foreground">{p.name}</p>
+                        <p className="font-heading font-bold text-foreground text-sm">{p.name}</p>
                       </div>
-                      <p className="font-heading font-bold text-2xl text-foreground">${(p.price_cents / 100).toFixed(0)}<span className="text-xs text-muted-foreground font-normal">/mo</span></p>
-                      <p className="text-xs text-primary font-semibold mb-3">{p.monthly_credits.toLocaleString()} credits</p>
+                      <p className="font-heading font-bold text-2xl text-foreground">₦{((p.price_cents / 100)).toLocaleString()}<span className="text-xs text-muted-foreground font-normal">/mo</span></p>
+                      <p className="text-xs text-primary font-semibold mb-3">{p.monthly_credits.toLocaleString()} AI Coins</p>
                       <ul className="space-y-1 text-[12px] mb-4 flex-1">
                         {p.features.slice(0, 4).map((f, j) => (
                           <li key={j} className="flex items-start gap-1.5 text-foreground"><Check size={12} className="text-teal mt-0.5 flex-shrink-0" /><span>{f}</span></li>
@@ -113,7 +113,7 @@ const PaywallModal = ({ open, onClose, reason = "upgrade" }: Props) => {
                         className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-1"
                       >
                         {paying === p.slug && <Loader2 className="animate-spin" size={12} />}
-                        Upgrade to {p.name}
+                        Subscribe
                       </button>
                     </div>
                   );
