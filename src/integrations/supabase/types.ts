@@ -441,6 +441,7 @@ export type Database = {
           is_active: boolean
           monthly_credits: number
           name: string
+          paystack_plan_code: string | null
           price_cents: number
           slug: string
           sort_order: number
@@ -454,6 +455,7 @@ export type Database = {
           is_active?: boolean
           monthly_credits?: number
           name: string
+          paystack_plan_code?: string | null
           price_cents: number
           slug: string
           sort_order?: number
@@ -467,6 +469,7 @@ export type Database = {
           is_active?: boolean
           monthly_credits?: number
           name?: string
+          paystack_plan_code?: string | null
           price_cents?: number
           slug?: string
           sort_order?: number
@@ -645,6 +648,9 @@ export type Database = {
         | "starter"
         | "professional"
         | "business"
+        | "premium"
+        | "enterprise_1200"
+        | "enterprise_2000"
       subscription_status: "active" | "cancelled" | "expired"
       transaction_status: "pending" | "success" | "failed"
     }
@@ -783,6 +789,9 @@ export const Constants = {
         "starter",
         "professional",
         "business",
+        "premium",
+        "enterprise_1200",
+        "enterprise_2000",
       ],
       subscription_status: ["active", "cancelled", "expired"],
       transaction_status: ["pending", "success", "failed"],

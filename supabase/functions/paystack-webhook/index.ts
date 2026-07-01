@@ -1,4 +1,4 @@
-// Paystack webhook receiver — verifies signature and activates plan idempotently.
+// Paystack webhook — verifies signature and processes charges (initial + recurring) idempotently.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { createHmac } from "node:crypto";
 
@@ -18,26 +18,60 @@ Deno.serve(async (req) => {
   let event: any;
   try { event = JSON.parse(raw); } catch { return new Response("bad_json", { status: 400 }); }
 
-  if (event.event !== "charge.success") return new Response("ignored", { status: 200 });
-
   const admin = createClient(SUPABASE_URL, SERVICE_KEY);
-  const data = event.data;
-  const reference = data.reference as string;
-  const meta = data.metadata || {};
-  const userId = meta.user_id;
-  const planSlug = meta.plan_slug;
-  if (!userId || !planSlug) return new Response("missing_meta", { status: 400 });
+  const type = event.event as string;
+  const data = event.data || {};
 
-  // Idempotency
+  try {
+    if (type === "charge.success") {
+      await handleChargeSuccess(admin, data);
+    } else if (type === "invoice.payment_failed" || type === "subscription.not_renew" || type === "subscription.disable") {
+      await handleFailure(admin, data, type);
+    } else {
+      return new Response("ignored", { status: 200 });
+    }
+    return new Response("ok", { status: 200 });
+  } catch (e) {
+    console.error("[paystack-webhook]", type, e);
+    return new Response("error", { status: 500 });
+  }
+});
+
+async function resolveUserAndPlan(admin: any, data: any) {
+  const meta = data.metadata || {};
+  let userId = meta.user_id as string | undefined;
+  let planSlug = meta.plan_slug as string | undefined;
+
+  if (!userId) {
+    const email = data.customer?.email;
+    if (email) {
+      const { data: users } = await admin.auth.admin.listUsers();
+      userId = users?.users?.find((u: any) => (u.email || "").toLowerCase() === email.toLowerCase())?.id;
+    }
+  }
+  if (!planSlug) {
+    const planCode = data.plan?.plan_code || data.plan_object?.plan_code;
+    if (planCode) {
+      const { data: p } = await admin.from("subscription_plans").select("slug").eq("paystack_plan_code", planCode).maybeSingle();
+      planSlug = p?.slug;
+    }
+  }
+  return { userId, planSlug };
+}
+
+async function handleChargeSuccess(admin: any, data: any) {
+  const reference = data.reference as string;
+  const { userId, planSlug } = await resolveUserAndPlan(admin, data);
+  if (!userId || !planSlug) return;
+
   const { data: existing } = await admin
     .from("transactions").select("status").eq("reference", reference).maybeSingle();
-  if (existing?.status === "success") return new Response("already_processed", { status: 200 });
+  if (existing?.status === "success") return;
 
   const { data: plan } = await admin
     .from("subscription_plans").select("monthly_credits").eq("slug", planSlug).maybeSingle();
   const coins = plan?.monthly_credits ?? 0;
 
-  // Upsert transaction
   await admin.from("transactions").upsert({
     user_id: userId,
     plan: planSlug,
@@ -57,18 +91,33 @@ Deno.serve(async (req) => {
     expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
   });
 
-  // Add credits
-  const { data: cur } = await admin.from("user_credits").select("paid_balance").eq("user_id", userId).maybeSingle();
-  await admin.from("user_credits").update({
-    paid_balance: (cur?.paid_balance ?? 0) + coins,
-  }).eq("user_id", userId);
+  // Reset paid_balance to the plan allocation (each billing cycle)
+  await admin.from("user_credits").update({ paid_balance: coins }).eq("user_id", userId);
 
   await admin.from("notifications").insert({
     user_id: userId,
     type: "payment_success",
     title: "Payment received",
-    body: `Your ${planSlug} plan is now active. ${coins} credits added.`,
+    body: `Your ${planSlug} plan is active. ${coins} AI Coins added.`,
   });
+}
 
-  return new Response("ok", { status: 200 });
-});
+async function handleFailure(admin: any, data: any, type: string) {
+  const { userId, planSlug } = await resolveUserAndPlan(admin, data);
+  if (!userId) return;
+
+  const q = admin.from("subscriptions")
+    .update({ status: type === "invoice.payment_failed" ? "expired" : "cancelled" })
+    .eq("user_id", userId);
+  if (planSlug) q.eq("plan", planSlug);
+  await q;
+
+  await admin.from("notifications").insert({
+    user_id: userId,
+    type: "payment_failed",
+    title: type === "invoice.payment_failed" ? "Renewal payment failed" : "Subscription ended",
+    body: type === "invoice.payment_failed"
+      ? "We couldn't renew your YAIDEV subscription. Premium access is suspended until payment succeeds."
+      : "Your YAIDEV subscription has ended. Renew to restore premium access.",
+  });
+}

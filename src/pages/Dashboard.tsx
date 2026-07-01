@@ -60,13 +60,18 @@ const Dashboard = () => {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading…</div>;
   }
 
-  const planLabel = subscription?.plan === "forever" ? "Forever (Unlimited)"
-    : subscription?.plan === "business" ? "Business"
-    : subscription?.plan === "professional" ? "Professional"
-    : subscription?.plan === "starter" ? "Starter"
-    : subscription?.plan === "enterprise" ? "Enterprise"
-    : subscription?.plan === "pro" ? "Pro"
-    : "Free";
+  const PLAN_LABELS: Record<string, string> = {
+    forever: "Forever (Unlimited)",
+    business: "YAIDEV Business 400",
+    professional: "YAIDEV Professional 200",
+    starter: "YAIDEV Starter 100",
+    premium: "YAIDEV Premium 800",
+    enterprise: "YAIDEV Enterprise",
+    enterprise_1200: "YAIDEV Enterprise 1200",
+    enterprise_2000: "YAIDEV Enterprise 2000",
+    pro: "Pro",
+  };
+  const planLabel = subscription?.plan ? (PLAN_LABELS[subscription.plan] || subscription.plan) : "Free";
 
   return (
     <div className="min-h-screen bg-background">
