@@ -7,7 +7,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const BodySchema = z.object({
-  plan_slug: z.enum(["starter", "professional", "business"]),
+  plan_slug: z.string().min(2).max(64),
   callback_url: z.string().url(),
 });
 
@@ -15,9 +15,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    if (!PAYSTACK_SECRET) {
-      return json({ error: "Paystack not configured" }, 500);
-    }
+    if (!PAYSTACK_SECRET) return json({ error: "Paystack not configured" }, 500);
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return json({ error: "unauthorized" }, 401);
@@ -33,7 +31,7 @@ Deno.serve(async (req) => {
 
     const { data: plan, error: planErr } = await admin
       .from("subscription_plans")
-      .select("slug,name,price_cents,currency,monthly_credits")
+      .select("slug,name,price_cents,currency,monthly_credits,paystack_plan_code")
       .eq("slug", plan_slug)
       .eq("is_active", true)
       .maybeSingle();
@@ -41,28 +39,31 @@ Deno.serve(async (req) => {
 
     const reference = `YAIDEV-${plan.slug.toUpperCase()}-${user.id.slice(0, 8)}-${Date.now()}`;
 
-    // Paystack expects amount in lowest currency unit (kobo for NGN, cents for USD)
+    // Paystack: use `plan` parameter to enable recurring subscriptions
+    const payload: Record<string, unknown> = {
+      email: user.email,
+      amount: plan.price_cents,
+      currency: plan.currency,
+      reference,
+      callback_url,
+      metadata: {
+        user_id: user.id,
+        plan_slug: plan.slug,
+        custom_fields: [
+          { display_name: "Plan", variable_name: "plan", value: plan.name },
+          { display_name: "Credits", variable_name: "credits", value: String(plan.monthly_credits) },
+        ],
+      },
+    };
+    if (plan.paystack_plan_code) payload.plan = plan.paystack_plan_code;
+
     const resp = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${PAYSTACK_SECRET}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        email: user.email,
-        amount: plan.price_cents,
-        currency: plan.currency,
-        reference,
-        callback_url,
-        metadata: {
-          user_id: user.id,
-          plan_slug: plan.slug,
-          custom_fields: [
-            { display_name: "Plan", variable_name: "plan", value: plan.name },
-            { display_name: "Credits", variable_name: "credits", value: String(plan.monthly_credits) },
-          ],
-        },
-      }),
+      body: JSON.stringify(payload),
     });
 
     const out = await resp.json();
@@ -70,7 +71,6 @@ Deno.serve(async (req) => {
       return json({ error: out.message || "paystack_init_failed", detail: out }, 502);
     }
 
-    // Record pending transaction
     await admin.from("transactions").insert({
       user_id: user.id,
       plan: plan.slug,
