@@ -116,9 +116,9 @@ const loadingSteps = [
   { label: "Finalizing deliverable", icon: CircleDot, color: "text-cyan" },
 ];
 
-const AiBuilder = ({ onBack }: { onBack: () => void }) => {
+const AiBuilder = ({ onBack, initialPrompt = "" }: { onBack: () => void; initialPrompt?: string }) => {
   const [category, setCategory] = useState<Category | null>(null);
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState(initialPrompt);
   const [phase, setPhase] = useState<"select" | "prompt" | "loading" | "result">("select");
   const [progress, setProgress] = useState(0);
   const [showPaywall, setShowPaywall] = useState(false);
