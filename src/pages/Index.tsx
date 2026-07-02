@@ -13,10 +13,12 @@ import Footer from "@/components/Footer";
 import AiBuilder from "@/components/AiBuilder";
 import PaywallModal from "@/components/PaywallModal";
 import { useAuth } from "@/contexts/AuthContext";
+import { openAIBuilder, readPendingPrompt, clearPendingPrompt } from "@/lib/openBuilder";
 
 const Index = () => {
   const [showAiBuilder, setShowAiBuilder] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [pendingPrompt, setPendingPrompt] = useState<string>("");
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
@@ -33,23 +35,38 @@ const Index = () => {
         const next = new URLSearchParams(params);
         next.delete("builder");
         setParams(next, { replace: true });
-        if (!user) navigate("/auth?redirect=/?builder=1");
-        else setShowAiBuilder(true);
+        if (!user) {
+          navigate("/auth?redirect=/?builder=1");
+        } else {
+          setPendingPrompt(readPendingPrompt());
+          clearPendingPrompt();
+          setShowAiBuilder(true);
+        }
       }
     }
   }, [params, setParams, user, loading, navigate]);
 
-  const openBuilder = () => {
+  // Centralized entry point — Navbar, BuildNow prompt/button all funnel here.
+  const handleOpenBuilder = (prompt?: string) => {
     if (loading) return;
-    if (!user) { navigate("/auth?redirect=/?builder=1"); return; }
-    setShowAiBuilder(true);
+    openAIBuilder({ prompt, user, navigate });
   };
 
-  if (showAiBuilder) return <AiBuilder onBack={() => setShowAiBuilder(false)} />;
+  if (showAiBuilder) {
+    return (
+      <AiBuilder
+        initialPrompt={pendingPrompt}
+        onBack={() => {
+          setShowAiBuilder(false);
+          setPendingPrompt("");
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen">
-      <Navbar onOpenBuilder={openBuilder} />
+      <Navbar onOpenBuilder={() => handleOpenBuilder()} />
       <Hero />
       <AboutSection />
       <ProductsSection />
@@ -58,7 +75,7 @@ const Index = () => {
       <TeamSection />
       <ProjectsSection />
       <div id="pricing" className="scroll-mt-20" aria-hidden="true" />
-      <BuildNowSection onOpenAiBuilder={openBuilder} />
+      <BuildNowSection onOpenAiBuilder={handleOpenBuilder} />
       <ContactSection />
       <Footer />
       <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
