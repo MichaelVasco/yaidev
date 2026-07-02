@@ -40,14 +40,29 @@ const PaywallModal = ({ open, onClose, reason = "upgrade" }: Props) => {
     if (!user) { navigate("/auth?redirect=/pricing"); return; }
     setPaying(slug);
     try {
+      console.log("[subscribe] initiating plan:", slug);
       const { data, error } = await supabase.functions.invoke("paystack-init", {
         body: { plan_slug: slug, callback_url: `${window.location.origin}/payment/success` },
       });
-      if (error) throw error;
+      console.log("[subscribe] response:", { data, error });
+      if (error) {
+        // Surface real server error instead of "non-2xx"
+        const ctx: any = (error as any).context;
+        let detail = error.message;
+        try {
+          const body = ctx?.body ? await ctx.body : null;
+          if (body) detail = typeof body === "string" ? body : JSON.stringify(body);
+        } catch {}
+        throw new Error(detail);
+      }
       const out = data as any;
-      if (!out?.ok || !out?.authorization_url) throw new Error(out?.error || "init_failed");
+      if (!out?.ok || !out?.authorization_url) {
+        console.error("[subscribe] init failed payload:", out);
+        throw new Error(out?.error ? `${out.error}${out?.detail ? ` — ${typeof out.detail === "string" ? out.detail : JSON.stringify(out.detail)}` : ""}` : "init_failed");
+      }
       window.location.href = out.authorization_url;
     } catch (e: any) {
+      console.error("[subscribe] error:", e);
       toast.error(e?.message || "Could not start checkout");
       setPaying(null);
     }
