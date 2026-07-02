@@ -13,7 +13,7 @@ import Footer from "@/components/Footer";
 import AiBuilder from "@/components/AiBuilder";
 import PaywallModal from "@/components/PaywallModal";
 import { useAuth } from "@/contexts/AuthContext";
-import { openAIBuilder, readPendingPrompt } from "@/lib/openBuilder";
+import { openAIBuilder, readPendingPrompt, clearPendingPrompt } from "@/lib/openBuilder";
 
 const Index = () => {
   const [showAiBuilder, setShowAiBuilder] = useState(false);
