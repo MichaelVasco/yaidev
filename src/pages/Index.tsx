@@ -39,6 +39,7 @@ const Index = () => {
           navigate("/auth?redirect=/?builder=1");
         } else {
           setPendingPrompt(readPendingPrompt());
+          clearPendingPrompt();
           setShowAiBuilder(true);
         }
       }
