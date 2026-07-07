@@ -79,8 +79,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const body = await req.json().catch(() => ({}));
-    const { action } = body;
+    // (body & action already parsed above)
 
     if (action === "update_provider") {
       const { slug, patch } = body;
