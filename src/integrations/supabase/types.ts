@@ -41,6 +41,179 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_models: {
+        Row: {
+          context_window: number | null
+          cost_input_per_1k: number | null
+          cost_output_per_1k: number | null
+          created_at: string
+          display_name: string
+          enabled: boolean
+          id: string
+          max_output: number | null
+          model_id: string
+          provider_slug: string
+          task_tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          context_window?: number | null
+          cost_input_per_1k?: number | null
+          cost_output_per_1k?: number | null
+          created_at?: string
+          display_name: string
+          enabled?: boolean
+          id?: string
+          max_output?: number | null
+          model_id: string
+          provider_slug: string
+          task_tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          context_window?: number | null
+          cost_input_per_1k?: number | null
+          cost_output_per_1k?: number | null
+          created_at?: string
+          display_name?: string
+          enabled?: boolean
+          id?: string
+          max_output?: number | null
+          model_id?: string
+          provider_slug?: string
+          task_tags?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_models_provider_slug_fkey"
+            columns: ["provider_slug"]
+            isOneToOne: false
+            referencedRelation: "ai_providers"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
+      ai_providers: {
+        Row: {
+          base_url: string | null
+          consecutive_failures: number
+          cooldown_until: string | null
+          created_at: string
+          enabled: boolean
+          env_var: string
+          health_status: string
+          last_failure_at: string | null
+          name: string
+          priority: number
+          slug: string
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          base_url?: string | null
+          consecutive_failures?: number
+          cooldown_until?: string | null
+          created_at?: string
+          enabled?: boolean
+          env_var: string
+          health_status?: string
+          last_failure_at?: string | null
+          name: string
+          priority?: number
+          slug: string
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          base_url?: string | null
+          consecutive_failures?: number
+          cooldown_until?: string | null
+          created_at?: string
+          enabled?: boolean
+          env_var?: string
+          health_status?: string
+          last_failure_at?: string | null
+          name?: string
+          priority?: number
+          slug?: string
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: []
+      }
+      ai_request_logs: {
+        Row: {
+          attempt: number
+          completion_tokens: number | null
+          created_at: string
+          error: string | null
+          estimated_cost_usd: number | null
+          feature: string | null
+          id: string
+          latency_ms: number | null
+          model_id: string | null
+          prompt_tokens: number | null
+          provider_slug: string | null
+          success: boolean
+          task_profile: string | null
+          total_tokens: number | null
+          user_id: string | null
+        }
+        Insert: {
+          attempt?: number
+          completion_tokens?: number | null
+          created_at?: string
+          error?: string | null
+          estimated_cost_usd?: number | null
+          feature?: string | null
+          id?: string
+          latency_ms?: number | null
+          model_id?: string | null
+          prompt_tokens?: number | null
+          provider_slug?: string | null
+          success?: boolean
+          task_profile?: string | null
+          total_tokens?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          attempt?: number
+          completion_tokens?: number | null
+          created_at?: string
+          error?: string | null
+          estimated_cost_usd?: number | null
+          feature?: string | null
+          id?: string
+          latency_ms?: number | null
+          model_id?: string | null
+          prompt_tokens?: number | null
+          provider_slug?: string | null
+          success?: boolean
+          task_profile?: string | null
+          total_tokens?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      ai_routing_config: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       approval_requests: {
         Row: {
           action: string
