@@ -29,13 +29,15 @@ Deno.serve(async (req) => {
 
   const sb = admin();
   try {
-    if (req.method === "GET") {
-      const [providers, models, cfgRows, logs, stats24h] = await Promise.all([
+    const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
+    const action = body.action || "overview";
+
+    if (action === "overview") {
+      const [providers, models, cfgRows, logs] = await Promise.all([
         sb.from("ai_providers").select("*").order("priority"),
         sb.from("ai_models").select("*").order("provider_slug"),
         sb.from("ai_routing_config").select("*"),
         sb.from("ai_request_logs").select("*").order("created_at", { ascending: false }).limit(100),
-        sb.rpc("noop", {}).then(() => null).catch(() => null),
       ]);
       // Aggregate 24h stats in JS (small dataset).
       const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
