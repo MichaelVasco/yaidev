@@ -1,19 +1,7 @@
-// AI Generation edge function — YAIDEV AI Builder execution engine
-// Always returns HTTP 200 with a structured JSON body so the frontend can
-// surface readable errors instead of a generic "non-2xx status code".
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
+// AI Generation edge function — YAIDEV AI Builder.
+// Refactored to delegate to the multi-provider AI Router.
+// Public request/response contract unchanged: { category, prompt, attachments } -> { category, result } | { error, fallback }
+import { routeJSON, corsHeaders, jsonResponse, userIdFromAuth, TaskProfile } from "../_shared/ai-router.ts";
 
 const SYSTEM_PROMPTS: Record<string, string> = {
   websites: `You are an elite full-stack web architect. Given a user brief, design a complete, production-ready website. Output a single JSON object with this exact shape:
@@ -47,104 +35,50 @@ previewHtml = a PLAYABLE single-file HTML5 canvas game prototype.`,
 {"title":string,"summary":string,"approach":string,"deliverable":string,"details":object,"previewHtml":string}`,
 };
 
-async function callGateway(apiKey: string, payload: unknown, attempt = 1): Promise<Response> {
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  // Retry once on transient upstream errors
-  if (!res.ok && (res.status === 502 || res.status === 503 || res.status === 504) && attempt < 2) {
-    console.warn(`[ai-generate] transient ${res.status}, retrying attempt ${attempt + 1}`);
-    await new Promise((r) => setTimeout(r, 800));
-    return callGateway(apiKey, payload, attempt + 1);
-  }
-  return res;
-}
+// Map builder category -> router task profile
+const TASK_FOR: Record<string, TaskProfile> = {
+  websites: "website", apps: "software", softwares: "software", games: "code",
+  bots: "reasoning", videos: "creative", audios: "creative", designs: "creative",
+  other: "generic",
+};
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-
   const t0 = Date.now();
   try {
-    let body: any;
-    try {
-      body = await req.json();
-    } catch {
-      return json({ error: "Invalid JSON body", fallback: false }, 200);
-    }
-
+    const body = await req.json().catch(() => ({}));
     const { category, prompt, attachments = [] } = body || {};
-    if (!category || !prompt) {
-      console.error("[ai-generate] missing params", { hasCategory: !!category, hasPrompt: !!prompt });
-      return json({ error: "Missing category or prompt", fallback: false }, 200);
-    }
-
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      console.error("[ai-generate] LOVABLE_API_KEY not configured");
-      return json({ error: "AI service is not configured. Please contact support.", fallback: false }, 200);
-    }
-
-    console.log(`[ai-generate] category=${category} promptLen=${String(prompt).length} attachments=${attachments?.length || 0}`);
+    if (!category || !prompt) return jsonResponse({ error: "Missing category or prompt", fallback: false });
 
     const system = SYSTEM_PROMPTS[category] || SYSTEM_PROMPTS.other;
-
     const userContent: any[] = [{ type: "text", text: prompt }];
-    const contextNotes: string[] = [];
+    const notes: string[] = [];
     for (const a of (attachments as any[]).slice(0, 8)) {
-      if (a?.kind === "image" && a?.dataUrl) {
-        userContent.push({ type: "image_url", image_url: { url: a.dataUrl } });
-        contextNotes.push(`- Image reference: ${a.name}`);
-      } else if (a?.kind === "text" && a?.textContent) {
-        userContent.push({ type: "text", text: `\n--- ${a.name} ---\n${a.textContent}\n--- end ${a.name} ---` });
-        contextNotes.push(`- Text file: ${a.name}`);
-      } else if (a) {
-        contextNotes.push(`- ${a.kind || "file"}: ${a.name} (${a.mime}, ${Math.round((a.size || 0) / 1024)} KB)`);
-      }
+      if (a?.kind === "image" && a?.dataUrl) userContent.push({ type: "image_url", image_url: { url: a.dataUrl } });
+      else if (a?.kind === "text" && a?.textContent) userContent.push({ type: "text", text: `\n--- ${a.name} ---\n${a.textContent}\n--- end ${a.name} ---` });
+      if (a) notes.push(`- ${a.kind || "file"}: ${a.name}`);
     }
-    if (contextNotes.length) {
-      userContent.unshift({ type: "text", text: `Reference materials:\n${contextNotes.join("\n")}\n\nUser brief:` });
-    }
+    if (notes.length) userContent.unshift({ type: "text", text: `Reference materials:\n${notes.join("\n")}\n\nUser brief:` });
 
-    let res: Response;
-    try {
-      res = await callGateway(LOVABLE_API_KEY, {
-        model: "google/gemini-2.5-pro",
-        messages: [
-          { role: "system", content: system + "\n\nReturn ONLY valid JSON. No markdown fences." },
-          { role: "user", content: userContent },
-        ],
-        response_format: { type: "json_object" },
-      });
-    } catch (e) {
-      console.error("[ai-generate] network error calling gateway:", e);
-      return json({ error: "AI service is temporarily unreachable. Please try again.", fallback: true }, 200);
-    }
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      console.error(`[ai-generate] gateway ${res.status}:`, text.slice(0, 500));
-      if (res.status === 429) return json({ error: "We're getting a lot of requests right now — please try again in a moment.", fallback: true }, 200);
-      if (res.status === 402) return json({ error: "AI credits exhausted. Please add credits to continue.", fallback: false }, 200);
-      if (res.status === 408 || res.status >= 500) return json({ error: "AI service hiccup — please try again.", fallback: true }, 200);
-      return json({ error: `AI request failed (${res.status}). Please refine your prompt and try again.`, fallback: false }, 200);
-    }
-
-    const data = await res.json();
-    const content = data.choices?.[0]?.message?.content ?? "{}";
-    let parsed: any;
-    try {
-      parsed = JSON.parse(content);
-    } catch {
-      const m = content.match(/\{[\s\S]*\}/);
-      parsed = m ? JSON.parse(m[0]) : { raw: content };
-    }
-
-    console.log(`[ai-generate] success in ${Date.now() - t0}ms`);
-    return json({ category, result: parsed });
-  } catch (e) {
-    console.error("[ai-generate] unexpected error:", e);
-    return json({ error: "Something went wrong on our side. Please try again.", fallback: true }, 200);
+    const userId = await userIdFromAuth(req);
+    console.log(`[ai-generate] category=${category} promptLen=${String(prompt).length}`);
+    const { result, meta } = await routeJSON({
+      feature: "ai-builder",
+      task: TASK_FOR[category] || "generic",
+      messages: [
+        { role: "system", content: system + "\n\nReturn ONLY valid JSON. No markdown fences." },
+        { role: "user", content: userContent },
+      ],
+      userId,
+    });
+    console.log(`[ai-generate] ok via ${meta.provider}/${meta.model} in ${Date.now() - t0}ms`);
+    return jsonResponse({ category, result });
+  } catch (e: any) {
+    const msg = e?.message || "AI request failed";
+    console.error("[ai-generate] fatal:", msg);
+    const lower = msg.toLowerCase();
+    if (lower.includes("no ai providers")) return jsonResponse({ error: msg, fallback: false });
+    if (lower.includes("all ai providers failed")) return jsonResponse({ error: "AI service is temporarily unreachable — please try again.", fallback: true });
+    return jsonResponse({ error: msg, fallback: true });
   }
 });
