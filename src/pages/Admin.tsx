@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2, Users, DollarSign, CreditCard, Plus, Minus, Edit2, 
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import AiGatewayAdmin from "@/components/AiGatewayAdmin";
 
 interface Plan {
   id: string; slug: string; name: string; price_cents: number; currency: string;
@@ -175,6 +176,10 @@ const Admin = () => {
               </tbody>
             </table>
           </div>
+        </Section>
+
+        <Section title="AI Gateway (Multi-Provider Router)">
+          <AiGatewayAdmin />
         </Section>
       </div>
     </div>

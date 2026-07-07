@@ -1,14 +1,6 @@
-// Unified AI service for: social, email, office, company managers.
-// Always returns HTTP 200 with structured JSON.
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-const json = (b: unknown, s = 200) =>
-  new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+// YAIDEV Unified AI service — social, email, office, company, project assistant.
+// Refactored to delegate to the multi-provider AI Router. Public contract preserved.
+import { routeJSON, corsHeaders, jsonResponse, userIdFromAuth, TaskProfile } from "../_shared/ai-router.ts";
 
 const SYSTEMS: Record<string, string> = {
   "social.post": `You are an elite social media strategist. Given a brand profile and a prompt, output a single JSON object:
@@ -20,14 +12,12 @@ Be on-brand, platform-aware, never generic.`,
 {"sentiment":string,"intent":string,"reply":string,"alternatives":string[],"escalate":boolean,"reason":string}`,
   "social.growth": `You are an elite social growth strategist. Output JSON:
 {"summary":string,"strategies":[{"title":string,"why":string,"steps":string[],"timeframe":string,"effort":string}],"contentMix":[{"type":string,"percent":number}],"experiments":string[]}`,
-
   "email.draft": `You are an elite executive email writer. Output JSON:
 {"subject":string,"preview":string,"body":string,"tone":string,"recommendedSendTime":string,"followUpInDays":number,"signatureSuggestion":string}`,
   "email.summary": `You summarize emails for busy executives. Output JSON:
 {"summary":string,"category":string,"priority":"low"|"medium"|"high"|"urgent","actionItems":string[],"suggestedReply":string,"followUpNeeded":boolean}`,
   "email.triage": `You triage an inbox. Given a list of emails, output JSON:
 {"urgent":[{"id":string,"reason":string}],"important":[{"id":string,"reason":string}],"informational":[{"id":string}],"spammy":[{"id":string}],"summary":string}`,
-
   "office.word": `You are an expert technical/business writer. Output JSON:
 {"title":string,"document":string,"sections":[{"heading":string,"body":string}],"styleNotes":string,"wordCount":number}
 document = full formatted plain text.`,
@@ -43,14 +33,12 @@ document = full formatted plain text.`,
 {"databaseName":string,"tables":[{"name":string,"fields":[{"name":string,"type":string,"primaryKey":boolean,"notes":string}]}],"relationships":[{"from":string,"to":string,"type":string}],"queries":[{"name":string,"sql":string,"purpose":string}]}`,
   "office.teams": `You draft Teams channel messages. Output JSON:
 {"channel":string,"message":string,"tone":string,"mentions":string[],"followUps":string[]}`,
-
   "company.daily": `You are an elite CEO advisor. Output a daily strategic recommendation as JSON:
 {"date":string,"executiveSummary":string,"recommendations":[{"area":string,"title":string,"why":string,"actions":string[],"expectedImpact":string,"priority":"low"|"medium"|"high"}],"kpisToWatch":string[],"risks":string[],"opportunities":string[]}`,
   "company.growth": `You are an elite growth & profitability consultant. Output JSON:
 {"growthScore":number,"profitabilityForecast":string,"revenueForecast":[{"month":string,"low":number,"base":number,"high":number}],"riskAssessment":[{"risk":string,"severity":string,"mitigation":string}],"marketOpportunities":string[],"fundingReadiness":{"score":number,"gaps":string[],"nextSteps":string[]},"strategicRoadmap":[{"quarter":string,"focus":string,"initiatives":string[]}]}`,
   "company.kpis": `You define executive KPIs. Output JSON:
 {"kpis":[{"name":string,"target":string,"current":string,"frequency":string,"why":string}],"dashboardSuggestion":string}`,
-
   "assistant.chat": `You are YAIDEV's elite AI Project Assistant — a senior staff engineer + product strategist. Given a project's metadata, optional uploaded files/context, and conversation history, respond with deep technical insight. Output JSON:
 {"reply":string,"summary":string,"actionItems":string[],"codeBlocks":[{"language":string,"filename":string,"code":string,"purpose":string}],"recommendations":string[],"nextSteps":string[]}
 Be specific to the project's stack and stage. Never generic.`,
@@ -63,32 +51,21 @@ estimatedCredits between 1 and 10 based on scope.`,
 {"projectHealthScore":number,"architecture":{"summary":string,"strengths":string[],"weaknesses":string[]},"security":{"score":number,"vulnerabilities":[{"severity":"low"|"medium"|"high"|"critical","title":string,"fix":string}]},"performance":{"score":number,"bottlenecks":string[],"optimizations":string[]},"seo":{"score":number,"recommendations":string[]},"deployment":{"recommended":string,"steps":string[]},"roadmap":[{"phase":string,"items":string[]}]}`,
 };
 
-async function callGateway(apiKey: string, payload: unknown, attempt = 1): Promise<Response> {
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok && [502, 503, 504].includes(res.status) && attempt < 2) {
-    await new Promise((r) => setTimeout(r, 800));
-    return callGateway(apiKey, payload, attempt + 1);
-  }
-  return res;
-}
+const TASK_FOR_MOD: Record<string, TaskProfile> = {
+  social: "creative", email: "business", office: "business",
+  company: "reasoning", assistant: "code",
+};
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
-    let body: any;
-    try { body = await req.json(); } catch { return json({ error: "Invalid JSON body" }); }
+    const body = await req.json().catch(() => null);
+    if (!body) return jsonResponse({ error: "Invalid JSON body" });
 
-    const { module: mod, action, prompt, profile, context } = body || {};
+    const { module: mod, action, prompt, profile, context } = body;
     const key = `${mod}.${action}`;
-    if (!SYSTEMS[key]) return json({ error: `Unknown action: ${key}` });
-    if (!prompt && !context) return json({ error: "Missing prompt or context" });
-
-    const apiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!apiKey) return json({ error: "AI service not configured." });
+    if (!SYSTEMS[key]) return jsonResponse({ error: `Unknown action: ${key}` });
+    if (!prompt && !context) return jsonResponse({ error: "Missing prompt or context" });
 
     const userText = [
       profile ? `Profile / setup:\n${JSON.stringify(profile, null, 2)}` : "",
@@ -96,31 +73,23 @@ Deno.serve(async (req) => {
       prompt ? `Request:\n${prompt}` : "",
     ].filter(Boolean).join("\n\n");
 
-    const res = await callGateway(apiKey, {
-      model: "google/gemini-2.5-pro",
+    const userId = await userIdFromAuth(req);
+    const { result, meta } = await routeJSON({
+      feature: `ai-service:${key}`,
+      task: TASK_FOR_MOD[mod] || "generic",
       messages: [
         { role: "system", content: SYSTEMS[key] + "\n\nReturn ONLY valid JSON. No markdown fences." },
         { role: "user", content: userText },
       ],
-      response_format: { type: "json_object" },
+      userId,
     });
-
-    if (!res.ok) {
-      const t = await res.text().catch(() => "");
-      console.error(`[ai-service] ${key} gateway ${res.status}:`, t.slice(0, 300));
-      if (res.status === 429) return json({ error: "Rate limited — please retry shortly.", fallback: true });
-      if (res.status === 402) return json({ error: "AI credits exhausted. Please add credits." });
-      return json({ error: `AI request failed (${res.status}).`, fallback: true });
-    }
-    const data = await res.json();
-    const content = data.choices?.[0]?.message?.content ?? "{}";
-    let parsed: any;
-    try { parsed = JSON.parse(content); }
-    catch { const m = content.match(/\{[\s\S]*\}/); parsed = m ? JSON.parse(m[0]) : { raw: content }; }
-
-    return json({ module: mod, action, result: parsed });
-  } catch (e) {
-    console.error("[ai-service] error", e);
-    return json({ error: "Something went wrong. Please try again.", fallback: true });
+    console.log(`[ai-service] ${key} ok via ${meta.provider}/${meta.model}`);
+    return jsonResponse({ module: mod, action, result });
+  } catch (e: any) {
+    const msg = e?.message || "AI request failed";
+    console.error("[ai-service] fatal:", msg);
+    if (msg.toLowerCase().includes("all ai providers failed"))
+      return jsonResponse({ error: "AI service is temporarily unreachable. Please try again.", fallback: true });
+    return jsonResponse({ error: msg, fallback: true });
   }
 });
