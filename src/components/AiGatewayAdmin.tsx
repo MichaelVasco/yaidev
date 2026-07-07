@@ -28,7 +28,7 @@ const AiGatewayAdmin = () => {
 
   const load = async () => {
     setLoading(true);
-    const { data: res, error } = await supabase.functions.invoke("ai-admin", { method: "GET" as any });
+    const { data: res, error } = await supabase.functions.invoke("ai-admin", { body: { action: "overview" } });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
     if (!res?.ok) { toast.error(res?.error || "Failed"); return; }
