@@ -177,6 +177,10 @@ const Admin = () => {
             </table>
           </div>
         </Section>
+
+        <Section title="AI Gateway (Multi-Provider Router)">
+          <AiGatewayAdmin />
+        </Section>
       </div>
     </div>
   );
