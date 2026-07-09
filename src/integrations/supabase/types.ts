@@ -607,6 +607,7 @@ export type Database = {
       }
       subscription_plans: {
         Row: {
+          billing_cycle: Database["public"]["Enums"]["billing_cycle"]
           created_at: string
           currency: string
           features: Json
@@ -621,6 +622,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
           created_at?: string
           currency?: string
           features?: Json
@@ -635,6 +637,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
           created_at?: string
           currency?: string
           features?: Json
@@ -652,6 +655,7 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          billing_cycle: Database["public"]["Enums"]["billing_cycle"]
           coins_granted: number
           created_at: string
           expires_at: string | null
@@ -663,6 +667,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
           coins_granted?: number
           created_at?: string
           expires_at?: string | null
@@ -674,6 +679,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
           coins_granted?: number
           created_at?: string
           expires_at?: string | null
@@ -813,6 +819,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      billing_cycle: "monthly" | "yearly"
       payment_provider: "paystack" | "stripe" | "flutterwave" | "demo"
       subscription_plan:
         | "pro"
@@ -954,6 +961,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      billing_cycle: ["monthly", "yearly"],
       payment_provider: ["paystack", "stripe", "flutterwave", "demo"],
       subscription_plan: [
         "pro",
