@@ -80,6 +80,9 @@ const Index = () => {
       <ContactSection />
       <Footer />
       <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
+      <BuildConfirmModal
+        onConfirm={(p) => openAIBuilder({ prompt: p, user, navigate, skipConfirm: true })}
+      />
     </div>
   );
 };
