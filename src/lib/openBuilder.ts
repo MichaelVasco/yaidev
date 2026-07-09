@@ -1,8 +1,9 @@
-// Centralized "Open AI Builder" flow — used by every entry point
-// (Enter key in the homepage prompt box, "Open AI Builder" button, etc.)
-// so the behavior is guaranteed identical across the app.
+// Centralized "Open AI Builder" flow.
+// Every entry point (Enter key on homepage, "Open AI Builder" button, Navbar CTA)
+// funnels through the same confirm-then-navigate sequence.
 
 export const PENDING_PROMPT_KEY = "yaidev:pendingPrompt";
+export const BUILDER_CONFIRM_EVENT = "yaidev:builder-confirm";
 
 export function savePendingPrompt(prompt: string): void {
   try {
@@ -23,28 +24,28 @@ export function readPendingPrompt(): string {
 }
 
 export function clearPendingPrompt(): void {
-  try {
-    sessionStorage.removeItem(PENDING_PROMPT_KEY);
-  } catch {
-    /* ignore */
-  }
+  try { sessionStorage.removeItem(PENDING_PROMPT_KEY); } catch { /* ignore */ }
 }
 
 type NavigateFn = (to: string) => void;
 
 /**
- * The single entry point every "Open AI Builder" trigger must call.
- *  - Persists the prompt so we can hydrate the Builder after auth redirects.
- *  - Sends unauthenticated users through /auth and returns them to the Builder.
- *  - Sends authenticated users to /?builder=1 which mounts <AiBuilder />.
+ * Show the "Ready To Build?" confirmation modal. On confirm the modal will
+ * call `openAIBuilder` below with the same prompt.
  */
 export function openAIBuilder(opts: {
   prompt?: string;
   user: unknown;
   navigate: NavigateFn;
+  skipConfirm?: boolean;
 }): void {
-  const { prompt = "", user, navigate } = opts;
+  const { prompt = "", user, navigate, skipConfirm = false } = opts;
   savePendingPrompt(prompt);
+
+  if (!skipConfirm && typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(BUILDER_CONFIRM_EVENT, { detail: { prompt } }));
+    return;
+  }
 
   const target = "/?builder=1";
   if (!user) {
