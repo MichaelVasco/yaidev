@@ -145,6 +145,11 @@ const Dashboard = () => {
               {subscription?.plan === "forever" ? <Sparkles size={18} className="text-blue" /> : null}
               <span className="font-heading font-semibold text-lg text-foreground">{planLabel}</span>
             </div>
+            {subscription && (
+              <p className="text-[11px] text-muted-foreground mt-0.5 uppercase tracking-wider">
+                Billed {(subscription as any).billing_cycle || "monthly"}
+              </p>
+            )}
             {subscription?.expires_at && (
               <p className="text-xs text-muted-foreground mt-1">Renews / expires {new Date(subscription.expires_at).toLocaleDateString()}</p>
             )}
