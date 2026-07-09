@@ -6,28 +6,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
+type Cycle = "monthly" | "yearly";
+
 interface Plan {
   id: string;
   slug: string;
   name: string;
-  price_cents: number;   // in kobo (NGN minor unit)
-  currency: string;      // "NGN"
+  price_cents: number;
+  currency: string;
   monthly_credits: number;
   features: string[];
   sort_order: number;
+  billing_cycle: Cycle;
 }
 
 type Ccy = "NGN" | "USD" | "EUR" | "GBP";
 
-// Approximate display rates (NGN -> target). Payments always settle in NGN via Paystack.
-const RATES: Record<Ccy, number> = {
-  NGN: 1,
-  USD: 1 / 1600,
-  EUR: 1 / 1750,
-  GBP: 1 / 2050,
-};
+// Display-only FX rates (NGN -> target). Payments always settle in NGN via Paystack.
+const RATES: Record<Ccy, number> = { NGN: 1, USD: 1 / 1600, EUR: 1 / 1750, GBP: 1 / 2050 };
 const SYMBOL: Record<Ccy, string> = { NGN: "₦", USD: "$", EUR: "€", GBP: "£" };
-
 const ICONS = [Sparkles, Zap, Rocket, Star, Crown, Building2];
 
 const Pricing = () => {
@@ -37,10 +34,11 @@ const Pricing = () => {
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState<string | null>(null);
   const [ccy, setCcy] = useState<Ccy>("NGN");
+  const [cycle, setCycle] = useState<Cycle>("monthly");
 
   useEffect(() => {
     supabase.from("subscription_plans")
-      .select("id,slug,name,price_cents,currency,monthly_credits,features,sort_order")
+      .select("id,slug,name,price_cents,currency,monthly_credits,features,sort_order,billing_cycle")
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
       .then(({ data }) => {
@@ -50,19 +48,19 @@ const Pricing = () => {
   }, []);
 
   const currentSlug = subscription?.plan as string | undefined;
+  const visiblePlans = useMemo(() => plans.filter(p => p.billing_cycle === cycle), [plans, cycle]);
 
   const subscribe = async (slug: string) => {
     if (!user) { navigate(`/auth?redirect=/pricing`); return; }
     setPaying(slug);
     try {
-      console.log("[pricing.subscribe] initiating plan:", slug);
       const { data, error } = await supabase.functions.invoke("paystack-init", {
         body: {
           plan_slug: slug,
+          billing_cycle: cycle,
           callback_url: `${window.location.origin}/payment/success`,
         },
       });
-      console.log("[pricing.subscribe] response:", { data, error });
       if (error) {
         const ctx: any = (error as any).context;
         let detail = error.message;
@@ -74,12 +72,10 @@ const Pricing = () => {
       }
       const out = data as any;
       if (!out?.ok || !out?.authorization_url) {
-        console.error("[pricing.subscribe] init failed payload:", out);
         throw new Error(out?.error ? `${out.error}${out?.detail ? ` — ${typeof out.detail === "string" ? out.detail : JSON.stringify(out.detail)}` : ""}` : "init_failed");
       }
       window.location.href = out.authorization_url;
     } catch (e: any) {
-      console.error("[pricing.subscribe] error:", e);
       toast.error(e?.message || "Could not start checkout");
       setPaying(null);
     }
@@ -110,6 +106,25 @@ const Pricing = () => {
           <p className="text-muted-foreground max-w-2xl mx-auto">Pick the plan that fits your workflow. Every plan includes AI Coins that renew each billing cycle.</p>
         </motion.div>
 
+        {/* Monthly / Yearly toggle */}
+        <div className="flex justify-center mb-4">
+          <div className="inline-flex items-center gap-1 p-1 rounded-full border border-border bg-card">
+            {(["monthly", "yearly"] as Cycle[]).map((c) => (
+              <button
+                key={c}
+                onClick={() => setCycle(c)}
+                className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-colors capitalize ${cycle === c ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                {c}
+                {c === "yearly" && (
+                  <span className="ml-1.5 inline-block px-1.5 py-0.5 rounded-full bg-teal/20 text-teal text-[9px] font-bold">-5%</span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Currency selector */}
         <div className="flex justify-center mb-8">
           <div className="inline-flex items-center gap-1 p-1 rounded-full border border-border bg-card">
             {(["NGN", "USD", "EUR", "GBP"] as Ccy[]).map((c) => (
@@ -128,10 +143,11 @@ const Pricing = () => {
           <div className="flex justify-center py-20"><Loader2 className="animate-spin text-muted-foreground" /></div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {plans.map((p, i) => {
+            {visiblePlans.map((p, i) => {
               const Icon = ICONS[i] || Sparkles;
               const popular = p.slug === "business";
               const isCurrent = currentSlug === p.slug;
+              const per = cycle === "yearly" ? "year" : "month";
               return (
                 <motion.div
                   key={p.id}
@@ -141,8 +157,11 @@ const Pricing = () => {
                   {popular && (
                     <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold tracking-wider uppercase px-3 py-1 rounded-full">Most Popular</span>
                   )}
+                  {cycle === "yearly" && (
+                    <span className="absolute -top-3 right-4 bg-teal text-white text-[10px] font-bold tracking-wider uppercase px-3 py-1 rounded-full">Save 5%</span>
+                  )}
                   {isCurrent && (
-                    <span className="absolute -top-3 right-4 bg-teal text-white text-[10px] font-bold tracking-wider uppercase px-3 py-1 rounded-full">Current Plan</span>
+                    <span className="absolute -top-3 left-4 bg-foreground text-background text-[10px] font-bold tracking-wider uppercase px-3 py-1 rounded-full">Current</span>
                   )}
                   <div className="flex items-center gap-2 mb-3">
                     <Icon size={20} className="text-primary" />
@@ -150,12 +169,14 @@ const Pricing = () => {
                   </div>
                   <div className="mb-1">
                     <span className="font-heading font-bold text-3xl text-foreground">{fmt(p.price_cents)}</span>
-                    <span className="text-muted-foreground text-sm"> / month</span>
+                    <span className="text-muted-foreground text-sm"> / {per}</span>
                   </div>
                   {ccy !== "NGN" && (
                     <p className="text-[11px] text-muted-foreground mb-1">Billed in NGN — {`₦${(p.price_cents/100).toLocaleString()}`}</p>
                   )}
-                  <p className="text-sm text-primary font-semibold mb-5">{p.monthly_credits.toLocaleString()} AI Coins / month</p>
+                  <p className="text-sm text-primary font-semibold mb-5">
+                    {p.monthly_credits.toLocaleString()} AI Coins / {per}
+                  </p>
 
                   <ul className="space-y-2 mb-6 flex-1">
                     {p.features.map((f, j) => (
@@ -183,10 +204,15 @@ const Pricing = () => {
                 </motion.div>
               );
             })}
+            {visiblePlans.length === 0 && (
+              <div className="col-span-full text-center py-10 text-sm text-muted-foreground">
+                No {cycle} plans available yet.
+              </div>
+            )}
           </div>
         )}
 
-        <div className="mt-10 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+        <div className="mt-10 flex items-center justify-center gap-2 text-xs text-muted-foreground text-center">
           <ShieldCheck size={14} className="text-teal" />
           Secure checkout via Paystack. Cards, bank transfer &amp; mobile money supported. All payments settle in NGN.
         </div>

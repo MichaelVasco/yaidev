@@ -14,6 +14,7 @@ import AiBuilder from "@/components/AiBuilder";
 import PaywallModal from "@/components/PaywallModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { openAIBuilder, readPendingPrompt, clearPendingPrompt } from "@/lib/openBuilder";
+import BuildConfirmModal from "@/components/BuildConfirmModal";
 
 const Index = () => {
   const [showAiBuilder, setShowAiBuilder] = useState(false);
@@ -79,6 +80,9 @@ const Index = () => {
       <ContactSection />
       <Footer />
       <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} />
+      <BuildConfirmModal
+        onConfirm={(p) => openAIBuilder({ prompt: p, user, navigate, skipConfirm: true })}
+      />
     </div>
   );
 };

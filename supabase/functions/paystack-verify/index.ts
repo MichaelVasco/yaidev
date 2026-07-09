@@ -49,6 +49,7 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: "user_mismatch" }, 403);
     }
     const planSlug = meta.plan_slug as string;
+    const billingCycle = (meta.billing_cycle === "yearly" ? "yearly" : "monthly") as "monthly" | "yearly";
     if (!planSlug) return json({ ok: false, error: "missing_plan" }, 400);
 
     // Activate via user-scoped client so activate_plan's auth.uid() check passes
@@ -62,6 +63,7 @@ Deno.serve(async (req) => {
       _amount_cents: out.data.amount,
       _currency: out.data.currency,
       _reference: reference,
+      _cycle: billingCycle,
     });
     if (actErr) return json({ ok: false, error: actErr.message }, 500);
 

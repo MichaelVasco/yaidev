@@ -145,6 +145,11 @@ const Dashboard = () => {
               {subscription?.plan === "forever" ? <Sparkles size={18} className="text-blue" /> : null}
               <span className="font-heading font-semibold text-lg text-foreground">{planLabel}</span>
             </div>
+            {subscription && (
+              <p className="text-[11px] text-muted-foreground mt-0.5 uppercase tracking-wider">
+                Billed {(subscription as any).billing_cycle || "monthly"}
+              </p>
+            )}
             {subscription?.expires_at && (
               <p className="text-xs text-muted-foreground mt-1">Renews / expires {new Date(subscription.expires_at).toLocaleDateString()}</p>
             )}
@@ -171,16 +176,26 @@ const Dashboard = () => {
           ) : (
             <div className="divide-y divide-border">
               {txs.map(t => (
-                <div key={t.id} className="flex items-center justify-between py-2.5 text-sm">
-                  <div>
-                    <p className="font-medium text-foreground capitalize">{t.plan || "—"} <span className="text-muted-foreground text-xs">· {t.provider}</span></p>
-                    <p className="text-[11px] text-muted-foreground">{new Date(t.created_at).toLocaleString()} {t.reference ? `· ${t.reference}` : ""}</p>
+                <div key={t.id} className="flex items-center justify-between py-2.5 text-sm gap-3">
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground capitalize truncate">{t.plan || "—"} <span className="text-muted-foreground text-xs">· {t.provider}</span></p>
+                    <p className="text-[11px] text-muted-foreground truncate">{new Date(t.created_at).toLocaleString()} {t.reference ? `· ${t.reference}` : ""}</p>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-foreground">{t.currency} {(t.amount_cents / 100).toFixed(2)}</p>
-                    <p className={`text-[11px] font-medium ${t.status === "success" ? "text-teal" : t.status === "failed" ? "text-destructive" : "text-muted-foreground"}`}>
-                      {t.status.toUpperCase()} {t.coins_added ? `· +${t.coins_added} coins` : ""}
-                    </p>
+                  <div className="text-right flex items-center gap-3 flex-shrink-0">
+                    <div>
+                      <p className="font-semibold text-foreground">{t.currency} {(t.amount_cents / 100).toLocaleString()}</p>
+                      <p className={`text-[11px] font-medium ${t.status === "success" ? "text-teal" : t.status === "failed" ? "text-destructive" : "text-muted-foreground"}`}>
+                        {t.status.toUpperCase()} {t.coins_added ? `· +${t.coins_added} coins` : ""}
+                      </p>
+                    </div>
+                    {t.status === "success" && (
+                      <button
+                        onClick={() => downloadInvoice(t, profile?.full_name || user.email || "", user.email || "")}
+                        className="text-[11px] font-semibold text-primary hover:underline"
+                      >
+                        Invoice
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -191,6 +206,33 @@ const Dashboard = () => {
     </div>
   );
 };
+
+function downloadInvoice(t: Tx, name: string, email: string) {
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>YAIDEV Invoice ${t.reference || t.id}</title>
+<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#0f172a;padding:40px;max-width:640px;margin:auto}
+h1{margin:0 0 4px;font-size:22px}.brand{color:#2563eb;font-weight:700;letter-spacing:.2em;text-transform:uppercase;font-size:11px}
+table{width:100%;border-collapse:collapse;margin-top:24px}td{padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:14px}
+td:first-child{color:#64748b;width:180px;text-transform:uppercase;font-size:11px;letter-spacing:.1em}
+.total{font-size:20px;font-weight:700}.foot{margin-top:32px;color:#94a3b8;font-size:11px;text-align:center}
+</style></head><body>
+<div class="brand">YAIDEV</div><h1>Payment Invoice</h1>
+<p style="color:#64748b;font-size:13px;margin:4px 0 0">Reference ${t.reference || t.id}</p>
+<table><tbody>
+<tr><td>Billed to</td><td>${name}<br><span style="color:#64748b">${email}</span></td></tr>
+<tr><td>Date</td><td>${new Date(t.created_at).toLocaleString()}</td></tr>
+<tr><td>Plan</td><td style="text-transform:capitalize">${t.plan || "—"}</td></tr>
+<tr><td>Payment method</td><td style="text-transform:capitalize">${t.provider}</td></tr>
+<tr><td>Status</td><td style="text-transform:uppercase;color:#0d9488;font-weight:600">${t.status}</td></tr>
+<tr><td>AI Coins</td><td>+${t.coins_added || 0}</td></tr>
+<tr><td>Amount</td><td class="total">${t.currency} ${(t.amount_cents / 100).toLocaleString()}</td></tr>
+</tbody></table>
+<p class="foot">Thank you for choosing YAIDEV. This is an official receipt for your records.</p>
+<script>window.onload=()=>{setTimeout(()=>window.print(),300)}</script>
+</body></html>`;
+  const w = window.open("", "_blank", "width=720,height=900");
+  if (!w) return;
+  w.document.open(); w.document.write(html); w.document.close();
+}
 
 const Card = ({ children }: { children: React.ReactNode }) => (
   <div className="bg-card border border-border rounded-xl p-5 shadow-sm">{children}</div>

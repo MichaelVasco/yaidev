@@ -607,6 +607,7 @@ export type Database = {
       }
       subscription_plans: {
         Row: {
+          billing_cycle: Database["public"]["Enums"]["billing_cycle"]
           created_at: string
           currency: string
           features: Json
@@ -621,6 +622,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
           created_at?: string
           currency?: string
           features?: Json
@@ -635,6 +637,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
           created_at?: string
           currency?: string
           features?: Json
@@ -652,6 +655,7 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          billing_cycle: Database["public"]["Enums"]["billing_cycle"]
           coins_granted: number
           created_at: string
           expires_at: string | null
@@ -663,6 +667,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
           coins_granted?: number
           created_at?: string
           expires_at?: string | null
@@ -674,6 +679,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
           coins_granted?: number
           created_at?: string
           expires_at?: string | null
@@ -787,17 +793,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      activate_plan: {
-        Args: {
-          _amount_cents: number
-          _currency: string
-          _plan: Database["public"]["Enums"]["subscription_plan"]
-          _provider: Database["public"]["Enums"]["payment_provider"]
-          _reference: string
-          _user_id: string
-        }
-        Returns: Json
-      }
+      activate_plan:
+        | {
+            Args: {
+              _amount_cents: number
+              _currency: string
+              _cycle?: Database["public"]["Enums"]["billing_cycle"]
+              _plan: Database["public"]["Enums"]["subscription_plan"]
+              _provider: Database["public"]["Enums"]["payment_provider"]
+              _reference: string
+              _user_id: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              _amount_cents: number
+              _currency: string
+              _plan: Database["public"]["Enums"]["subscription_plan"]
+              _provider: Database["public"]["Enums"]["payment_provider"]
+              _reference: string
+              _user_id: string
+            }
+            Returns: Json
+          }
       admin_adjust_credits: {
         Args: { _delta: number; _reason: string; _target_user: string }
         Returns: Json
@@ -813,6 +832,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      billing_cycle: "monthly" | "yearly"
       payment_provider: "paystack" | "stripe" | "flutterwave" | "demo"
       subscription_plan:
         | "pro"
@@ -954,6 +974,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      billing_cycle: ["monthly", "yearly"],
       payment_provider: ["paystack", "stripe", "flutterwave", "demo"],
       subscription_plan: [
         "pro",
