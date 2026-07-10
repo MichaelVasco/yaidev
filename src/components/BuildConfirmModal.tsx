@@ -32,8 +32,10 @@ const BuildConfirmModal = ({ onConfirm }: Props) => {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-      if (e.key === "Enter") confirm();
+      if (e.key === "Escape") {
+        e.preventDefault();
+        close();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -93,7 +95,6 @@ const BuildConfirmModal = ({ onConfirm }: Props) => {
               </button>
               <button
                 onClick={confirm}
-                autoFocus
                 className="py-2.5 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5"
               >
                 <Rocket size={14} /> Build Now
