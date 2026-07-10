@@ -9,19 +9,24 @@ interface Props {
 
 const BuildNowSection = ({ onOpenAiBuilder }: Props) => {
   const [prompt, setPrompt] = useState("");
-  const [launching, setLaunching] = useState(false);
+  const launching = false;
 
+  // Opens the "Ready To Build?" modal immediately.
+  // Does NOT navigate or scroll — navigation happens only when the user
+  // clicks "Build Now" inside the modal.
   const launch = (value: string) => {
-    if (launching) return;
-    setLaunching(true);
-    // Small delay so the loading animation is visible on very fast navigations.
-    setTimeout(() => onOpenAiBuilder(value), 180);
+    onOpenAiBuilder(value);
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    // Enter (without Shift) submits — matches "Open AI Builder" click exactly.
+    // Enter (without Shift) opens the confirm modal. Block ALL default and
+    // bubbling behaviour so nothing else on the page can react (no form
+    // submit, no anchor activation, no scroll-to-hash side effects).
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
+      e.stopPropagation();
+      const native = e.nativeEvent as Event & { stopImmediatePropagation?: () => void };
+      native.stopImmediatePropagation?.();
       launch(prompt);
     }
   };
