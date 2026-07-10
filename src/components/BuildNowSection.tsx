@@ -27,7 +27,7 @@ const BuildNowSection = ({ onOpenAiBuilder }: Props) => {
       e.stopPropagation();
       const native = e.nativeEvent as Event & { stopImmediatePropagation?: () => void };
       native.stopImmediatePropagation?.();
-      launch(prompt);
+      launch(e.currentTarget.value);
     }
   };
 
@@ -69,15 +69,11 @@ const BuildNowSection = ({ onOpenAiBuilder }: Props) => {
         </motion.div>
 
         {/* ── Homepage prompt box: Enter or button both call openAIBuilder(prompt) ── */}
-        <motion.form
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          onSubmit={(e) => {
-            e.preventDefault();
-            launch(prompt);
-          }}
           className="max-w-3xl mx-auto mb-12"
         >
           <div className="relative bg-white rounded-2xl border border-border shadow-sm hover:shadow-lg hover:border-primary/25 transition-all duration-300 overflow-hidden group">
@@ -97,7 +93,8 @@ const BuildNowSection = ({ onOpenAiBuilder }: Props) => {
                 disabled={launching}
               />
               <motion.button
-                type="submit"
+                type="button"
+                onClick={() => launch(prompt)}
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.95 }}
                 disabled={launching}
@@ -122,7 +119,7 @@ const BuildNowSection = ({ onOpenAiBuilder }: Props) => {
               </span>
             </div>
           </div>
-        </motion.form>
+        </motion.div>
 
         <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {/* Human Experts */}
