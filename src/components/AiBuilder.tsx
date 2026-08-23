@@ -65,27 +65,24 @@ const formatBytes = (b: number) =>
 
 
 const categories = [
-  { value: "websites", label: "Websites", icon: Globe, color: "blue" },
-  { value: "apps", label: "Apps", icon: Smartphone, color: "purple" },
-  { value: "softwares", label: "Softwares", icon: Monitor, color: "teal" },
-  { value: "games", label: "Games", icon: Gamepad2, color: "cyan" },
-  { value: "bots", label: "Bots", icon: Bot, color: "blue" },
-  { value: "agents", label: "AI Agents", icon: BrainCircuit, color: "purple" },
-  { value: "images", label: "Create Images", icon: ImageIcon, color: "purple" },
-  { value: "logos", label: "Create Logos", icon: Hexagon, color: "teal" },
-  { value: "videos", label: "Create Videos", icon: Video, color: "cyan" },
-  { value: "audios", label: "Create Audios", icon: Music, color: "blue" },
-  { value: "designs", label: "Create Designs", icon: PenTool, color: "purple" },
-  { value: "other", label: "Create Any Other Thing", icon: Wand2, color: "teal" },
-  { value: "social", label: "Social Media Manager", icon: Share2, color: "blue" },
-  { value: "email", label: "Email Manager", icon: Mail, color: "purple" },
-  { value: "office", label: "Microsoft Office Manager", icon: FileText, color: "teal" },
-  { value: "company", label: "Company Manager", icon: Building2, color: "cyan" },
-  { value: "assistant", label: "AI Project Assistant", icon: Rocket, color: "blue" },
+  { value: "websites", label: "Websites", icon: Globe, color: "blue",
+    desc: "Build complete responsive websites from natural-language instructions." },
+  { value: "apps", label: "Apps", icon: Smartphone, color: "purple",
+    desc: "Build mobile and web applications from natural-language instructions." },
+  { value: "software", label: "Software", icon: Monitor, color: "teal",
+    desc: "Build software products, dashboards, SaaS platforms and business systems." },
+  { value: "games", label: "Games", icon: Gamepad2, color: "cyan",
+    desc: "Build playable games and interactive gaming experiences." },
+  { value: "robots", label: "Robots", icon: Bot, color: "blue",
+    desc: "Build software and AI systems that control, operate or integrate with robotics." },
+  { value: "agents", label: "AI Agents", icon: BrainCircuit, color: "purple",
+    desc: "Build autonomous agents that use tools, follow workflows and call external services." },
+  { value: "models", label: "AI Models", icon: Cpu, color: "teal",
+    desc: "Build, configure, fine-tune, orchestrate or deploy AI/ML model-powered systems." },
 ] as const;
 
 type Category = (typeof categories)[number]["value"];
-const imageCategories: Category[] = ["images", "logos", "designs"];
+const imageCategories: string[] = [];
 
 const VIDEO_STYLES = ["Promotional", "AI Commercial", "Product", "Explainer", "Social Media", "Cinematic", "Animation"];
 const VIDEO_DURATIONS = ["15s", "30s", "60s", "90s"];
