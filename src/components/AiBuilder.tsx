@@ -65,27 +65,24 @@ const formatBytes = (b: number) =>
 
 
 const categories = [
-  { value: "websites", label: "Websites", icon: Globe, color: "blue" },
-  { value: "apps", label: "Apps", icon: Smartphone, color: "purple" },
-  { value: "softwares", label: "Softwares", icon: Monitor, color: "teal" },
-  { value: "games", label: "Games", icon: Gamepad2, color: "cyan" },
-  { value: "bots", label: "Bots", icon: Bot, color: "blue" },
-  { value: "agents", label: "AI Agents", icon: BrainCircuit, color: "purple" },
-  { value: "images", label: "Create Images", icon: ImageIcon, color: "purple" },
-  { value: "logos", label: "Create Logos", icon: Hexagon, color: "teal" },
-  { value: "videos", label: "Create Videos", icon: Video, color: "cyan" },
-  { value: "audios", label: "Create Audios", icon: Music, color: "blue" },
-  { value: "designs", label: "Create Designs", icon: PenTool, color: "purple" },
-  { value: "other", label: "Create Any Other Thing", icon: Wand2, color: "teal" },
-  { value: "social", label: "Social Media Manager", icon: Share2, color: "blue" },
-  { value: "email", label: "Email Manager", icon: Mail, color: "purple" },
-  { value: "office", label: "Microsoft Office Manager", icon: FileText, color: "teal" },
-  { value: "company", label: "Company Manager", icon: Building2, color: "cyan" },
-  { value: "assistant", label: "AI Project Assistant", icon: Rocket, color: "blue" },
+  { value: "websites", label: "Websites", icon: Globe, color: "blue",
+    desc: "Build complete responsive websites from natural-language instructions." },
+  { value: "apps", label: "Apps", icon: Smartphone, color: "purple",
+    desc: "Build mobile and web applications from natural-language instructions." },
+  { value: "software", label: "Software", icon: Monitor, color: "teal",
+    desc: "Build software products, dashboards, SaaS platforms and business systems." },
+  { value: "games", label: "Games", icon: Gamepad2, color: "cyan",
+    desc: "Build playable games and interactive gaming experiences." },
+  { value: "robots", label: "Robots", icon: Bot, color: "blue",
+    desc: "Build software and AI systems that control, operate or integrate with robotics." },
+  { value: "agents", label: "AI Agents", icon: BrainCircuit, color: "purple",
+    desc: "Build autonomous agents that use tools, follow workflows and call external services." },
+  { value: "models", label: "AI Models", icon: Cpu, color: "teal",
+    desc: "Build, configure, fine-tune, orchestrate or deploy AI/ML model-powered systems." },
 ] as const;
 
 type Category = (typeof categories)[number]["value"];
-const imageCategories: Category[] = ["images", "logos", "designs"];
+const imageCategories: string[] = [];
 
 const VIDEO_STYLES = ["Promotional", "AI Commercial", "Product", "Explainer", "Social Media", "Cinematic", "Animation"];
 const VIDEO_DURATIONS = ["15s", "30s", "60s", "90s"];
@@ -138,16 +135,11 @@ const AiBuilder = ({ onBack, initialPrompt = "" }: { onBack: () => void; initial
   const navigate = useNavigate();
 
   const selectedCat = categories.find((c) => c.value === category);
-  const isImage = category && imageCategories.includes(category);
-  const isVideo = category === "videos";
+  const isImage = !!category && imageCategories.includes(category);
+  const isVideo = false;
 
   const handleSelect = (val: Category) => {
     if (val === "agents") { setShowAgents(true); return; }
-    if (val === "social") { navigate("/social"); return; }
-    if (val === "email") { navigate("/email"); return; }
-    if (val === "office") { navigate("/office"); return; }
-    if (val === "company") { navigate("/company"); return; }
-    if (val === "assistant") { navigate("/assistant"); return; }
     setCategory(val); setPhase("prompt");
   };
 
@@ -377,13 +369,17 @@ const AiBuilder = ({ onBack, initialPrompt = "" }: { onBack: () => void; initial
                 <h1 className="text-3xl md:text-4xl font-heading font-bold text-foreground mb-3">AI Powered <span className="text-gradient">Builder</span></h1>
                 <p className="text-muted-foreground flex items-center justify-center gap-2"><AiPulse color="teal" />Select what you want to create</p>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {categories.map(({ value, label, icon: Icon, color }) => (
-                  <motion.button key={value} whileHover={{ y: -4, scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => handleSelect(value)} className="group bg-card rounded-xl border border-border p-5 text-left card-glow hover:border-blue/20 transition-all duration-300 relative overflow-hidden">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {categories.map(({ value, label, icon: Icon, color, desc }) => (
+                  <motion.button key={value} whileHover={{ y: -4, scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => handleSelect(value)} className="group bg-card rounded-xl border border-border p-5 text-left card-glow hover:border-blue/20 transition-all duration-300 relative overflow-hidden flex flex-col h-full">
                     <div className={`w-10 h-10 rounded-lg ${bgMap[color]} flex items-center justify-center mb-3 transition-all duration-300`}>
                       <Icon size={20} className={colorMap[color]} />
                     </div>
-                    <span className="text-sm font-medium text-foreground">{label}</span>
+                    <span className="text-sm font-semibold text-foreground">{label}</span>
+                    <p className="text-xs text-muted-foreground leading-relaxed mt-1.5 mb-4 break-words">{desc}</p>
+                    <span className={`mt-auto inline-flex items-center gap-1.5 text-xs font-semibold ${colorMap[color]} group-hover:gap-2.5 transition-all`}>
+                      Build Now <ArrowLeft size={13} className="rotate-180" />
+                    </span>
                   </motion.button>
                 ))}
               </div>

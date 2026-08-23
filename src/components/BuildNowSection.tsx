@@ -145,7 +145,7 @@ const BuildNowSection = ({ onOpenAiBuilder }: Props) => {
                 Let Our Human Experts Build For You
               </h3>
               <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-                Websites · Apps · Software · Games · Bots · Images · Logos · Videos · Audios · Designs · Any Other Thing
+                Websites · Apps · Software · Games · Robots · AI Agents · AI Models
               </p>
 
               <div className="flex items-center justify-center gap-4 mb-6 text-muted-foreground text-xs">
@@ -182,7 +182,7 @@ const BuildNowSection = ({ onOpenAiBuilder }: Props) => {
                 Let AI Build For You
               </h3>
               <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-                Websites · Apps · Software · Games · Bots · Images · Logos · Videos · Audios · Designs · Any Other Thing
+                Websites · Apps · Software · Games · Robots · AI Agents · AI Models
               </p>
 
               <div className="flex items-center justify-center gap-4 mb-6 text-muted-foreground text-xs">
