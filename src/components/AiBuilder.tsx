@@ -369,13 +369,17 @@ const AiBuilder = ({ onBack, initialPrompt = "" }: { onBack: () => void; initial
                 <h1 className="text-3xl md:text-4xl font-heading font-bold text-foreground mb-3">AI Powered <span className="text-gradient">Builder</span></h1>
                 <p className="text-muted-foreground flex items-center justify-center gap-2"><AiPulse color="teal" />Select what you want to create</p>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {categories.map(({ value, label, icon: Icon, color }) => (
-                  <motion.button key={value} whileHover={{ y: -4, scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => handleSelect(value)} className="group bg-card rounded-xl border border-border p-5 text-left card-glow hover:border-blue/20 transition-all duration-300 relative overflow-hidden">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {categories.map(({ value, label, icon: Icon, color, desc }) => (
+                  <motion.button key={value} whileHover={{ y: -4, scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => handleSelect(value)} className="group bg-card rounded-xl border border-border p-5 text-left card-glow hover:border-blue/20 transition-all duration-300 relative overflow-hidden flex flex-col h-full">
                     <div className={`w-10 h-10 rounded-lg ${bgMap[color]} flex items-center justify-center mb-3 transition-all duration-300`}>
                       <Icon size={20} className={colorMap[color]} />
                     </div>
-                    <span className="text-sm font-medium text-foreground">{label}</span>
+                    <span className="text-sm font-semibold text-foreground">{label}</span>
+                    <p className="text-xs text-muted-foreground leading-relaxed mt-1.5 mb-4 break-words">{desc}</p>
+                    <span className={`mt-auto inline-flex items-center gap-1.5 text-xs font-semibold ${colorMap[color]} group-hover:gap-2.5 transition-all`}>
+                      Build Now <ArrowLeft size={13} className="rotate-180" />
+                    </span>
                   </motion.button>
                 ))}
               </div>
