@@ -135,16 +135,11 @@ const AiBuilder = ({ onBack, initialPrompt = "" }: { onBack: () => void; initial
   const navigate = useNavigate();
 
   const selectedCat = categories.find((c) => c.value === category);
-  const isImage = category && imageCategories.includes(category);
-  const isVideo = category === "videos";
+  const isImage = !!category && imageCategories.includes(category);
+  const isVideo = false;
 
   const handleSelect = (val: Category) => {
     if (val === "agents") { setShowAgents(true); return; }
-    if (val === "social") { navigate("/social"); return; }
-    if (val === "email") { navigate("/email"); return; }
-    if (val === "office") { navigate("/office"); return; }
-    if (val === "company") { navigate("/company"); return; }
-    if (val === "assistant") { navigate("/assistant"); return; }
     setCategory(val); setPhase("prompt");
   };
 
