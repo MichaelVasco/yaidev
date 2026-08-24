@@ -258,6 +258,87 @@ export type Database = {
           },
         ]
       }
+      build_sessions: {
+        Row: {
+          category: string
+          coins_spent: number
+          created_at: string
+          id: string
+          metadata: Json
+          payment_status: string
+          preview: Json
+          prompt: string
+          result: Json
+          state: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          coins_spent?: number
+          created_at?: string
+          id?: string
+          metadata?: Json
+          payment_status?: string
+          preview?: Json
+          prompt: string
+          result?: Json
+          state?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          coins_spent?: number
+          created_at?: string
+          id?: string
+          metadata?: Json
+          payment_status?: string
+          preview?: Json
+          prompt?: string
+          result?: Json
+          state?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      coin_transactions: {
+        Row: {
+          amount: number
+          balance_after: number
+          build_session_id: string | null
+          created_at: string
+          id: string
+          metadata: Json
+          reason: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          balance_after?: number
+          build_session_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          reason?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          balance_after?: number
+          build_session_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          reason?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
@@ -290,6 +371,27 @@ export type Database = {
           metadata?: Json
           read?: boolean
           title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      preview_claims: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
           user_id?: string
         }
         Relationships: []
@@ -821,6 +923,10 @@ export type Database = {
         Args: { _delta: number; _reason: string; _target_user: string }
         Returns: Json
       }
+      claim_preview: {
+        Args: { _category?: string; _user_id: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -828,7 +934,15 @@ export type Database = {
         }
         Returns: boolean
       }
-      spend_credit: { Args: { _user_id: string }; Returns: Json }
+      spend_credit: {
+        Args: {
+          _amount?: number
+          _build_session_id?: string
+          _reason?: string
+          _user_id: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "user"
