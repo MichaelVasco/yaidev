@@ -895,30 +895,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      activate_plan:
-        | {
-            Args: {
-              _amount_cents: number
-              _currency: string
-              _cycle?: Database["public"]["Enums"]["billing_cycle"]
-              _plan: Database["public"]["Enums"]["subscription_plan"]
-              _provider: Database["public"]["Enums"]["payment_provider"]
-              _reference: string
-              _user_id: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              _amount_cents: number
-              _currency: string
-              _plan: Database["public"]["Enums"]["subscription_plan"]
-              _provider: Database["public"]["Enums"]["payment_provider"]
-              _reference: string
-              _user_id: string
-            }
-            Returns: Json
-          }
+      activate_plan: {
+        Args: {
+          _amount_cents: number
+          _currency: string
+          _cycle?: Database["public"]["Enums"]["billing_cycle"]
+          _plan: Database["public"]["Enums"]["subscription_plan"]
+          _provider: Database["public"]["Enums"]["payment_provider"]
+          _reference: string
+          _user_id: string
+        }
+        Returns: Json
+      }
       admin_adjust_credits: {
         Args: { _delta: number; _reason: string; _target_user: string }
         Returns: Json
