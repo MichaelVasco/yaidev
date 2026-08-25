@@ -36,7 +36,7 @@ interface AuthCtx {
   refreshCredits: () => Promise<void>;
   refreshAll: () => Promise<void>;
   signOut: () => Promise<void>;
-  spendCredit: () => Promise<{ ok: boolean; error?: string }>;
+  spendCredit: (amount?: number, reason?: string, buildSessionId?: string) => Promise<{ ok: boolean; error?: string }>;
   canGenerate: boolean;
   totalCoinsAvailable: number;
 }
@@ -103,17 +103,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setProfile(null); setCredits(null); setSubscription(null);
   }, []);
 
-  const spendCredit = useCallback(async () => {
+  const spendCredit = useCallback(async (amount = 1, reason = "ai_generation", buildSessionId?: string) => {
     if (!user) return { ok: false, error: "not_authenticated" };
-    const { data, error } = await supabase.rpc("spend_credit", { _user_id: user.id });
+    const { data, error } = await supabase.rpc("spend_credit", {
+      _user_id: user.id,
+      _amount: amount,
+      _reason: reason,
+      _build_session_id: buildSessionId ?? null,
+    });
     if (error) return { ok: false, error: error.message };
     const result = data as any;
     await refreshCredits();
     return { ok: !!result?.ok, error: result?.error };
   }, [user, refreshCredits]);
 
+  // Paid coins only — YAIDEV grants no free/daily/promotional credits.
   const totalCoinsAvailable = credits
-    ? (credits.lifetime_unlimited ? Infinity : credits.daily_free_remaining + credits.paid_balance)
+    ? (credits.lifetime_unlimited ? Infinity : credits.paid_balance)
     : 0;
 
   const canGenerate = !!user && (credits?.lifetime_unlimited || totalCoinsAvailable > 0);
