@@ -36,7 +36,7 @@ interface AuthCtx {
   refreshCredits: () => Promise<void>;
   refreshAll: () => Promise<void>;
   signOut: () => Promise<void>;
-  spendCredit: () => Promise<{ ok: boolean; error?: string }>;
+  spendCredit: (amount?: number, reason?: string, buildSessionId?: string) => Promise<{ ok: boolean; error?: string }>;
   canGenerate: boolean;
   totalCoinsAvailable: number;
 }
