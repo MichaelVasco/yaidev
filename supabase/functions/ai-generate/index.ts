@@ -164,7 +164,6 @@ Deno.serve(async (req) => {
     } catch (genErr: any) {
       // Refund the coin when a paid generation never produced anything.
       if (mode === "full") {
-        await admin.rpc("admin_refund_noop").catch(() => {});
         const { data: cur } = await admin.from("user_credits").select("paid_balance").eq("user_id", user.id).maybeSingle();
         const newBal = (cur?.paid_balance ?? 0) + 1;
         await admin.from("user_credits").update({ paid_balance: newBal }).eq("user_id", user.id);
