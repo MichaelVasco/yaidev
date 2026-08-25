@@ -1,64 +1,103 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Crown, Check, AlertTriangle, Loader2, Sparkles, Zap } from "lucide-react";
+import { X, Crown, Check, Lock, Loader2, Sparkles, Zap, ShieldCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+
+export const RESUME_BUILD_KEY = "yaidev:resumeBuild";
 
 interface Plan {
   id: string;
   slug: string;
   name: string;
   price_cents: number;
+  currency: string;
   monthly_credits: number;
   features: string[];
+  billing_cycle: "monthly" | "yearly";
 }
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  reason?: "out_of_coins" | "upgrade";
+  /** Why the paywall appeared — drives the headline copy. */
+  reason?: "out_of_coins" | "upgrade" | "complete_build" | "preview_limit";
+  /** Build session to resume automatically once payment succeeds. */
+  buildSessionId?: string | null;
+  /** What the user was building, shown in the header for context. */
+  buildLabel?: string;
 }
 
-const PaywallModal = ({ open, onClose, reason = "upgrade" }: Props) => {
+const HEADLINES: Record<string, { title: string; body: string }> = {
+  complete_build: {
+    title: "Subscribe to complete your build",
+    body: "Your preview is ready. Choose a plan to unlock the complete, production-ready deliverable — your build resumes automatically right where it stopped.",
+  },
+  preview_limit: {
+    title: "Free previews used up for today",
+    body: "You've reached today's preview limit. Subscribe to build without limits — your current work is saved and will resume after payment.",
+  },
+  out_of_coins: {
+    title: "You're out of YAIDEV AI Coins",
+    body: "Renew or upgrade your plan to keep building. Your saved builds stay intact.",
+  },
+  upgrade: {
+    title: "Choose your YAIDEV plan",
+    body: "Every plan includes full access to the YAIDEV AI Builder and a monthly allocation of AI Coins.",
+  },
+};
+
+const PaywallModal = ({ open, onClose, reason = "upgrade", buildSessionId = null, buildLabel }: Props) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
+    setLoading(true);
     supabase.from("subscription_plans")
-      .select("id,slug,name,price_cents,monthly_credits,features")
+      .select("id,slug,name,price_cents,currency,monthly_credits,features,billing_cycle")
       .eq("is_active", true).order("sort_order")
-      .then(({ data }) => { setPlans((data || []) as Plan[]); setLoading(false); });
+      .then(({ data }) => { setPlans((data || []) as unknown as Plan[]); setLoading(false); });
   }, [open]);
+
+  const visible = useMemo(() => plans.filter((p) => p.billing_cycle === cycle), [plans, cycle]);
 
   const subscribe = async (slug: string) => {
     if (!user) { navigate("/auth?redirect=/pricing"); return; }
     setPaying(slug);
     try {
-      console.log("[subscribe] initiating plan:", slug);
+      // Remember the in-flight build so it resumes after the payment redirect.
+      try {
+        if (buildSessionId) localStorage.setItem(RESUME_BUILD_KEY, buildSessionId);
+        else localStorage.removeItem(RESUME_BUILD_KEY);
+      } catch { /* storage unavailable */ }
+
       const { data, error } = await supabase.functions.invoke("paystack-init", {
-        body: { plan_slug: slug, callback_url: `${window.location.origin}/payment/success` },
+        body: {
+          plan_slug: slug,
+          billing_cycle: cycle,
+          build_session_id: buildSessionId,
+          callback_url: `${window.location.origin}/payment/success`,
+        },
       });
-      console.log("[subscribe] response:", { data, error });
       if (error) {
-        // Surface real server error instead of "non-2xx"
         const ctx: any = (error as any).context;
         let detail = error.message;
         try {
           const body = ctx?.body ? await ctx.body : null;
           if (body) detail = typeof body === "string" ? body : JSON.stringify(body);
-        } catch {}
+        } catch { /* ignore */ }
         throw new Error(detail);
       }
       const out = data as any;
       if (!out?.ok || !out?.authorization_url) {
-        console.error("[subscribe] init failed payload:", out);
-        throw new Error(out?.error ? `${out.error}${out?.detail ? ` — ${typeof out.detail === "string" ? out.detail : JSON.stringify(out.detail)}` : ""}` : "init_failed");
+        throw new Error(out?.error ? `${out.error}${out?.detail ? ` — ${typeof out.detail === "string" ? out.detail : JSON.stringify(out.detail)}` : ""}` : "Could not start checkout");
       }
       window.location.href = out.authorization_url;
     } catch (e: any) {
@@ -70,7 +109,8 @@ const PaywallModal = ({ open, onClose, reason = "upgrade" }: Props) => {
 
   if (!open) return null;
 
-  const icons = [Sparkles, Zap, Crown];
+  const copy = HEADLINES[reason] || HEADLINES.upgrade;
+  const icons = [Sparkles, Zap, Crown, ShieldCheck];
 
   return (
     <AnimatePresence>
@@ -84,29 +124,42 @@ const PaywallModal = ({ open, onClose, reason = "upgrade" }: Props) => {
           onClick={(e) => e.stopPropagation()}
           className="bg-card rounded-2xl border border-border shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-y-auto"
         >
-          <div className="flex items-center justify-between p-5 border-b border-border">
-            <div className="flex items-center gap-2">
-              <Crown size={18} className="text-primary" />
-              <h3 className="font-heading font-bold text-foreground">
-                {reason === "out_of_coins" ? "You've exhausted your free credits" : "Upgrade your plan"}
-              </h3>
+          <div className="flex items-start justify-between gap-4 p-5 border-b border-border">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Lock size={16} className="text-primary" />
+              </div>
+              <div>
+                <h3 className="font-heading font-bold text-foreground">{copy.title}</h3>
+                <p className="text-xs text-muted-foreground mt-1 max-w-2xl">{copy.body}</p>
+                {buildLabel && (
+                  <p className="text-[11px] text-primary mt-1.5 font-medium">Saved build: {buildLabel}</p>
+                )}
+              </div>
             </div>
-            <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
+            <button onClick={onClose} aria-label="Close" className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
           </div>
 
           <div className="p-5">
-            {reason === "out_of_coins" && (
-              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 mb-5 flex items-start gap-2 text-sm">
-                <AlertTriangle size={16} className="text-destructive mt-0.5 flex-shrink-0" />
-                <p className="text-foreground">You've used all your daily free credits. Pick a plan to keep generating.</p>
+            <div className="flex justify-center mb-5">
+              <div className="inline-flex rounded-full border border-border p-1 bg-muted/40">
+                {(["monthly", "yearly"] as const).map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setCycle(c)}
+                    className={`px-4 py-1.5 rounded-full text-xs font-semibold capitalize transition-colors ${cycle === c ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    {c}{c === "yearly" ? " · save 5%" : ""}
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
 
             {loading ? (
               <div className="py-12 flex justify-center"><Loader2 className="animate-spin text-muted-foreground" /></div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {plans.map((p, i) => {
+                {visible.map((p, i) => {
                   const Icon = icons[i % icons.length] || Sparkles;
                   const popular = p.slug === "business";
                   return (
@@ -115,10 +168,13 @@ const PaywallModal = ({ open, onClose, reason = "upgrade" }: Props) => {
                         <Icon size={16} className="text-primary" />
                         <p className="font-heading font-bold text-foreground text-sm">{p.name}</p>
                       </div>
-                      <p className="font-heading font-bold text-2xl text-foreground">₦{((p.price_cents / 100)).toLocaleString()}<span className="text-xs text-muted-foreground font-normal">/mo</span></p>
+                      <p className="font-heading font-bold text-2xl text-foreground">
+                        ${(p.price_cents / 100).toLocaleString()}
+                        <span className="text-xs text-muted-foreground font-normal">/{cycle === "yearly" ? "yr" : "mo"}</span>
+                      </p>
                       <p className="text-xs text-primary font-semibold mb-3">{p.monthly_credits.toLocaleString()} AI Coins</p>
                       <ul className="space-y-1 text-[12px] mb-4 flex-1">
-                        {p.features.slice(0, 4).map((f, j) => (
+                        {(p.features || []).slice(0, 4).map((f, j) => (
                           <li key={j} className="flex items-start gap-1.5 text-foreground"><Check size={12} className="text-teal mt-0.5 flex-shrink-0" /><span>{f}</span></li>
                         ))}
                       </ul>
@@ -128,7 +184,7 @@ const PaywallModal = ({ open, onClose, reason = "upgrade" }: Props) => {
                         className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-1"
                       >
                         {paying === p.slug && <Loader2 className="animate-spin" size={12} />}
-                        Subscribe
+                        {paying === p.slug ? "Redirecting…" : "Subscribe & continue build"}
                       </button>
                     </div>
                   );
@@ -136,7 +192,10 @@ const PaywallModal = ({ open, onClose, reason = "upgrade" }: Props) => {
               </div>
             )}
 
-            <div className="text-center mt-4">
+            <p className="text-center text-[11px] text-muted-foreground mt-4">
+              Secure payment by Paystack · Cards, bank transfer & USSD · Cancel anytime
+            </p>
+            <div className="text-center mt-2">
               <Link to="/pricing" onClick={onClose} className="text-xs text-primary hover:underline">Compare all plans →</Link>
             </div>
           </div>
