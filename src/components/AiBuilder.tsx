@@ -701,6 +701,110 @@ const AiBuilder = ({
             </motion.div>
           )}
 
+          {phase === "preview" && (
+            <motion.div key="preview" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-4xl mx-auto">
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-card text-[11px] font-semibold tracking-wider uppercase text-muted-foreground mb-4">
+                  <Eye size={12} className="text-cyan" /> Limited preview
+                </div>
+                <h2 className="text-2xl md:text-3xl font-heading font-bold text-foreground mb-2">
+                  Here's what YAIDEV will <span className="text-gradient">build for you</span>
+                </h2>
+                <p className="text-muted-foreground text-sm max-w-xl mx-auto">
+                  This is a preview only. Subscribe to unlock the complete, production-ready deliverable.
+                </p>
+              </div>
+
+              <div className="space-y-5">
+                {previewResult?.understanding && (
+                  <div className="bg-card rounded-2xl border border-border p-6 card-glow">
+                    {previewResult.title && <h3 className="text-lg font-heading font-bold text-foreground mb-2">{previewResult.title}</h3>}
+                    <p className="text-sm text-muted-foreground leading-relaxed">{previewResult.understanding}</p>
+                  </div>
+                )}
+
+                <div className="grid md:grid-cols-2 gap-5">
+                  {["requirements", "architecture"].map((k) => (
+                    Array.isArray(previewResult?.[k]) && previewResult[k].length > 0 ? (
+                      <div key={k} className="bg-card rounded-2xl border border-border p-5 card-glow">
+                        <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3">{k}</h4>
+                        <ul className="space-y-2">
+                          {previewResult[k].map((item: string, i: number) => (
+                            <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                              <CheckCircle2 size={13} className="text-teal mt-0.5 shrink-0" /><span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null
+                  ))}
+                </div>
+
+                {Array.isArray(previewResult?.buildPlan) && previewResult.buildPlan.length > 0 && (
+                  <div className="bg-card rounded-2xl border border-border p-5 card-glow">
+                    <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3">Build plan</h4>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {previewResult.buildPlan.map((p: any, i: number) => (
+                        <div key={i} className="rounded-xl border border-border p-3">
+                          <p className="text-sm font-semibold text-foreground">{i + 1}. {p.phase}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{p.outcome}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {previewResult?.previewHtml && (
+                  <div className="bg-card rounded-2xl border border-border overflow-hidden card-glow relative">
+                    <div className="flex items-center gap-2 p-4 border-b border-border">
+                      <Monitor size={16} className="text-purple" />
+                      <span className="text-sm font-heading font-semibold">Visual preview (partial)</span>
+                    </div>
+                    <div className="relative">
+                      <iframe srcDoc={previewResult.previewHtml} title="Limited preview" className="w-full h-[380px] bg-white" sandbox="allow-scripts" />
+                      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-card to-transparent pointer-events-none" />
+                    </div>
+                  </div>
+                )}
+
+                {/* Locked deliverables */}
+                <div className="relative rounded-2xl border-2 border-dashed border-border p-6 overflow-hidden">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Lock size={16} className="text-primary" />
+                    <h4 className="text-sm font-heading font-bold text-foreground">Unlocked with a YAIDEV plan</h4>
+                  </div>
+                  <ul className="grid sm:grid-cols-2 gap-2">
+                    {(Array.isArray(previewResult?.locked) && previewResult.locked.length
+                      ? previewResult.locked
+                      : ["Complete production-ready build", "Full source & specification export", "Live downloadable preview", "Deployment guidance", "Unlimited refinements within your plan"]
+                    ).map((l: string, i: number) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground blur-[0.2px]">
+                        <Lock size={12} className="mt-1 shrink-0 text-muted-foreground/60" /><span>{l}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                    onClick={() => runFullBuild()}
+                    className="w-full sm:w-auto px-7 py-3 rounded-xl font-heading font-semibold text-sm flex items-center justify-center gap-2 text-white hover-glow-blue transition-all"
+                    style={{ background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple)))" }}>
+                    {canUse ? (<><Zap size={15} /> Complete my build (1 AI Coin)</>) : (<><Crown size={15} /> Subscribe to complete this build</>)}
+                  </motion.button>
+                  <button onClick={() => setPhase("prompt")}
+                    className="w-full sm:w-auto px-6 py-3 rounded-xl border border-border bg-card text-foreground font-heading font-semibold text-sm card-glow hover:border-blue/20 transition-all">
+                    Edit my request
+                  </button>
+                </div>
+                <p className="text-center text-[11px] text-muted-foreground">
+                  Your build is saved — it resumes automatically after payment.
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+
           {phase === "result" && (
             <motion.div key="result" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-5xl mx-auto">
               <div className="text-center mb-8">
