@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Sparkles, Send, CheckCircle2,
@@ -7,7 +7,7 @@ import {
   Download, Copy, RotateCcw, Crown, Coins,
   Activity, Cpu, Zap, CircleDot, AlertCircle, Code2, ExternalLink,
   Paperclip, UploadCloud, X, FileText, FileArchive, FileAudio, FileVideo, File as FileIcon,
-  Share2, Mail, Building2, Rocket
+  Share2, Mail, Building2, Rocket, Eye, Lock
 } from "lucide-react";
 import { useCredits } from "@/hooks/use-credits";
 import PaywallModal from "@/components/PaywallModal";
@@ -113,13 +113,20 @@ const loadingSteps = [
   { label: "Finalizing deliverable", icon: CircleDot, color: "text-cyan" },
 ];
 
-const AiBuilder = ({ onBack, initialPrompt = "" }: { onBack: () => void; initialPrompt?: string }) => {
+const AiBuilder = ({
+  onBack,
+  initialPrompt = "",
+  resumeSessionId = null,
+}: { onBack: () => void; initialPrompt?: string; resumeSessionId?: string | null }) => {
   const [category, setCategory] = useState<Category | null>(null);
   const [prompt, setPrompt] = useState(initialPrompt);
-  const [phase, setPhase] = useState<"select" | "prompt" | "loading" | "result">("select");
+  const [phase, setPhase] = useState<"select" | "prompt" | "loading" | "preview" | "result">("select");
   const [progress, setProgress] = useState(0);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [paywallReason, setPaywallReason] = useState<"complete_build" | "out_of_coins" | "preview_limit" | "upgrade">("complete_build");
   const [result, setResult] = useState<any>(null);
+  const [previewResult, setPreviewResult] = useState<any>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [images, setImages] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showAgents, setShowAgents] = useState(false);
@@ -129,9 +136,9 @@ const AiBuilder = ({ onBack, initialPrompt = "" }: { onBack: () => void; initial
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const resumeHandled = useRef(false);
 
-
-  const { user, accessStatus, canUse, spendCredit, coinsRemaining, isLifetime } = useCredits();
+  const { user, accessStatus, canUse, coinsRemaining, isLifetime, refreshCredits } = useCredits();
   const navigate = useNavigate();
 
   const selectedCat = categories.find((c) => c.value === category);
@@ -142,6 +149,33 @@ const AiBuilder = ({ onBack, initialPrompt = "" }: { onBack: () => void; initial
     if (val === "agents") { setShowAgents(true); return; }
     setCategory(val); setPhase("prompt");
   };
+
+  // ── Resume a paid build after the payment redirect (or from the dashboard) ──
+  useEffect(() => {
+    if (!resumeSessionId || !user || resumeHandled.current) return;
+    resumeHandled.current = true;
+    (async () => {
+      const { data } = await supabase
+        .from("build_sessions")
+        .select("id, category, prompt, preview, result, state")
+        .eq("id", resumeSessionId)
+        .maybeSingle();
+      if (!data) return;
+      const s = data as any;
+      setSessionId(s.id);
+      setCategory(s.category as Category);
+      setPrompt(s.prompt || "");
+      if (s.result && Object.keys(s.result).length) {
+        setResult(s.result); setPhase("result"); return;
+      }
+      if (s.preview && Object.keys(s.preview).length) setPreviewResult(s.preview);
+      setPhase("preview");
+      toast.success("Payment confirmed — resuming your build");
+      // Continue automatically now that the plan is active.
+      setTimeout(() => runFullBuild(s.id, s.category, s.prompt), 400);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resumeSessionId, user]);
 
   if (showAgents) return <AiAgents onBack={() => setShowAgents(false)} />;
 
@@ -222,7 +256,12 @@ const AiBuilder = ({ onBack, initialPrompt = "" }: { onBack: () => void; initial
         } else if ((data as any)?.error) {
           lastErrorMsg = (data as any).error;
           const fallback = (data as any).fallback === true;
-          if (!fallback) throw new Error(lastErrorMsg);
+          if (!fallback) {
+            const err: any = new Error(lastErrorMsg);
+            err.requiresPayment = (data as any).requiresPayment === true;
+            err.requiresAuth = (data as any).requiresAuth === true;
+            throw err;
+          }
           console.warn(`[${fn}] fallback error attempt ${attempt}:`, lastErrorMsg);
         } else {
           return data;
@@ -241,53 +280,118 @@ const AiBuilder = ({ onBack, initialPrompt = "" }: { onBack: () => void; initial
     throw new Error(lastErrorMsg);
   };
 
+  const payloadAttachments = () => attachments.map((a) => ({
+    name: a.name, mime: a.mime, size: a.size, kind: a.kind,
+    dataUrl: a.kind === "image" ? a.dataUrl : undefined,
+    textContent: a.kind === "text" ? a.textContent : undefined,
+  }));
+
+  const startTicker = () => {
+    setProgress(5);
+    return setInterval(() => {
+      setProgress((p) => (p < 90 ? p + Math.max(1, Math.round((92 - p) / 12)) : p));
+    }, 600);
+  };
+
+  /** Step 1 — free, limited preview. Never consumes coins. */
   const handleBuild = async () => {
     if (!prompt.trim() || !category) return;
     if (uploading) { toast.error("Please wait for uploads to finish"); return; }
-    if (!user) { navigate("/auth?redirect=/"); return; }
-    if (!canUse) { setShowPaywall(true); return; }
-    const spend = await spendCredit();
-    if (!spend.ok) { setShowPaywall(true); return; }
+    if (!user) {
+      // Preserve the work, then send the user through auth and straight back.
+      try {
+        sessionStorage.setItem("yaidev:pendingPrompt", prompt.trim());
+        sessionStorage.setItem("yaidev:pendingCategory", category);
+      } catch { /* ignore */ }
+      navigate(`/auth?redirect=${encodeURIComponent("/?builder=1")}`);
+      return;
+    }
 
     setPhase("loading");
-    setProgress(5);
     setError(null);
     setResult(null);
+    setPreviewResult(null);
     setImages([]);
-
-    const tick = setInterval(() => {
-      setProgress((p) => (p < 90 ? p + Math.max(1, Math.round((92 - p) / 12)) : p));
-    }, 600);
-
-    const payloadAttachments = attachments.map((a) => ({
-      name: a.name, mime: a.mime, size: a.size, kind: a.kind,
-      dataUrl: a.kind === "image" ? a.dataUrl : undefined,
-      textContent: a.kind === "text" ? a.textContent : undefined,
-    }));
+    const tick = startTicker();
 
     try {
-      if (isImage) {
-        const data = await invokeWithRetry("ai-image", {
-          category, prompt, variants: 3, attachments: payloadAttachments,
-        });
-        setImages((data as any).images || []);
-      } else {
-        const fullPrompt = isVideo
-          ? `${prompt}\n\nProduction specs:\n- Style: ${videoStyle}\n- Duration: ${videoDuration}\n- Resolution: ${videoResolution}`
-          : prompt;
-        const data = await invokeWithRetry("ai-generate", {
-          category, prompt: fullPrompt, attachments: payloadAttachments,
-        });
-        setResult((data as any).result);
-      }
+      // Persist the build so it survives payment redirects, refreshes and devices.
+      let sid = sessionId;
+      const { data: created } = await supabase.from("build_sessions").insert({
+        user_id: user.id,
+        category,
+        prompt: prompt.trim(),
+        state: "preview",
+        metadata: { attachments: attachments.map((a) => ({ name: a.name, kind: a.kind })) },
+      }).select("id").single();
+      sid = (created as any)?.id ?? sid;
+      setSessionId(sid);
+
+      const data = await invokeWithRetry("ai-generate", {
+        category, prompt: prompt.trim(), mode: "preview",
+        build_session_id: sid, attachments: payloadAttachments(),
+      });
+      setPreviewResult((data as any).result);
       setProgress(100);
-      setTimeout(() => setPhase("result"), 350);
+      setTimeout(() => setPhase("preview"), 350);
     } catch (e: any) {
-      console.error("[handleBuild] failed:", e);
+      console.error("[handleBuild:preview] failed:", e);
       const msg = e?.message || "Temporary server issue. Please try again.";
-      setError(msg);
-      toast.error(msg);
+      if (e?.requiresPayment) {
+        setPaywallReason("preview_limit");
+        setShowPaywall(true);
+      } else {
+        setError(msg);
+        toast.error(msg);
+      }
       setPhase("prompt");
+    } finally {
+      clearInterval(tick);
+    }
+  };
+
+  /** Step 2 — the complete deliverable. Server deducts coins before generating. */
+  const runFullBuild = async (sid?: string | null, cat?: string | null, text?: string) => {
+    const useSid = sid ?? sessionId;
+    const useCat = (cat ?? category) as string | null;
+    const useText = (text ?? prompt).trim();
+    if (!useCat || !useText) return;
+    if (!user) { navigate(`/auth?redirect=${encodeURIComponent("/?builder=1")}`); return; }
+    if (!canUse) {
+      setPaywallReason("complete_build");
+      setShowPaywall(true);
+      return;
+    }
+
+    setPhase("loading");
+    setError(null);
+    const tick = startTicker();
+    try {
+      const fullPrompt = isVideo
+        ? `${useText}\n\nProduction specs:\n- Style: ${videoStyle}\n- Duration: ${videoDuration}\n- Resolution: ${videoResolution}`
+        : useText;
+      const data = await invokeWithRetry("ai-generate", {
+        category: useCat, prompt: fullPrompt, mode: "full",
+        build_session_id: useSid, attachments: payloadAttachments(),
+      });
+      setResult((data as any).result);
+      setProgress(100);
+      await refreshCredits();
+      setTimeout(() => setPhase("result"), 350);
+      toast.success("Build complete — 1 AI Coin used");
+    } catch (e: any) {
+      console.error("[runFullBuild] failed:", e);
+      if (e?.requiresPayment) {
+        setPaywallReason("out_of_coins");
+        setShowPaywall(true);
+        setPhase("preview");
+      } else {
+        const msg = e?.message || "Temporary server issue. Please try again.";
+        setError(msg);
+        toast.error(msg);
+        setPhase(previewResult ? "preview" : "prompt");
+      }
+      await refreshCredits();
     } finally {
       clearInterval(tick);
     }
@@ -295,7 +399,8 @@ const AiBuilder = ({ onBack, initialPrompt = "" }: { onBack: () => void; initial
 
   const handleReset = () => {
     setPhase("select"); setCategory(null); setPrompt("");
-    setProgress(0); setResult(null); setImages([]); setError(null);
+    setProgress(0); setResult(null); setPreviewResult(null); setSessionId(null);
+    setImages([]); setError(null);
     attachments.forEach((a) => a.previewUrl && URL.revokeObjectURL(a.previewUrl));
     setAttachments([]);
   };
@@ -348,9 +453,9 @@ const AiBuilder = ({ onBack, initialPrompt = "" }: { onBack: () => void; initial
             )}
           </div>
 
-          <button onClick={() => setShowPaywall(true)} className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card card-glow hover:border-blue/20 transition-all text-sm">
+          <button onClick={() => { setPaywallReason(canUse ? "upgrade" : "out_of_coins"); setShowPaywall(true); }} className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card card-glow hover:border-blue/20 transition-all text-sm">
             {isLifetime ? (<><Crown size={14} className="text-blue" /><span className="font-medium text-blue">Unlimited</span></>)
-              : accessStatus === "subscribed" ? (<><Sparkles size={14} className="text-purple" /><span className="font-medium text-purple">Pro</span></>)
+              : accessStatus === "locked" ? (<><Crown size={14} className="text-primary" /><span className="font-medium text-primary">Subscribe</span></>)
               : (<><Coins size={14} className={coinsRemaining > 5 ? "text-blue" : "text-destructive"} /><span className={`font-medium ${coinsRemaining > 5 ? "text-foreground" : "text-destructive"}`}>{coinsRemaining} coins</span></>)}
           </button>
         </div>
@@ -552,7 +657,7 @@ const AiBuilder = ({ onBack, initialPrompt = "" }: { onBack: () => void; initial
                   <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={handleBuild} disabled={!prompt.trim() || uploading}
                     className="px-6 py-2.5 rounded-lg font-heading font-semibold text-sm flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed text-white hover-glow-blue transition-all duration-300"
                     style={{ background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple)))" }}>
-                    <Send size={14} /> {uploading ? "Uploading..." : "Build with AI"}
+                    <Send size={14} /> {uploading ? "Uploading..." : "Generate free preview"}
                   </motion.button>
                 </div>
 
@@ -595,6 +700,110 @@ const AiBuilder = ({ onBack, initialPrompt = "" }: { onBack: () => void; initial
               </div>
             </motion.div>
           )}
+
+          {phase === "preview" && (
+            <motion.div key="preview" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-4xl mx-auto">
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-card text-[11px] font-semibold tracking-wider uppercase text-muted-foreground mb-4">
+                  <Eye size={12} className="text-cyan" /> Limited preview
+                </div>
+                <h2 className="text-2xl md:text-3xl font-heading font-bold text-foreground mb-2">
+                  Here's what YAIDEV will <span className="text-gradient">build for you</span>
+                </h2>
+                <p className="text-muted-foreground text-sm max-w-xl mx-auto">
+                  This is a preview only. Subscribe to unlock the complete, production-ready deliverable.
+                </p>
+              </div>
+
+              <div className="space-y-5">
+                {previewResult?.understanding && (
+                  <div className="bg-card rounded-2xl border border-border p-6 card-glow">
+                    {previewResult.title && <h3 className="text-lg font-heading font-bold text-foreground mb-2">{previewResult.title}</h3>}
+                    <p className="text-sm text-muted-foreground leading-relaxed">{previewResult.understanding}</p>
+                  </div>
+                )}
+
+                <div className="grid md:grid-cols-2 gap-5">
+                  {["requirements", "architecture"].map((k) => (
+                    Array.isArray(previewResult?.[k]) && previewResult[k].length > 0 ? (
+                      <div key={k} className="bg-card rounded-2xl border border-border p-5 card-glow">
+                        <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3">{k}</h4>
+                        <ul className="space-y-2">
+                          {previewResult[k].map((item: string, i: number) => (
+                            <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                              <CheckCircle2 size={13} className="text-teal mt-0.5 shrink-0" /><span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null
+                  ))}
+                </div>
+
+                {Array.isArray(previewResult?.buildPlan) && previewResult.buildPlan.length > 0 && (
+                  <div className="bg-card rounded-2xl border border-border p-5 card-glow">
+                    <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3">Build plan</h4>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {previewResult.buildPlan.map((p: any, i: number) => (
+                        <div key={i} className="rounded-xl border border-border p-3">
+                          <p className="text-sm font-semibold text-foreground">{i + 1}. {p.phase}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{p.outcome}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {previewResult?.previewHtml && (
+                  <div className="bg-card rounded-2xl border border-border overflow-hidden card-glow relative">
+                    <div className="flex items-center gap-2 p-4 border-b border-border">
+                      <Monitor size={16} className="text-purple" />
+                      <span className="text-sm font-heading font-semibold">Visual preview (partial)</span>
+                    </div>
+                    <div className="relative">
+                      <iframe srcDoc={previewResult.previewHtml} title="Limited preview" className="w-full h-[380px] bg-white" sandbox="allow-scripts" />
+                      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-card to-transparent pointer-events-none" />
+                    </div>
+                  </div>
+                )}
+
+                {/* Locked deliverables */}
+                <div className="relative rounded-2xl border-2 border-dashed border-border p-6 overflow-hidden">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Lock size={16} className="text-primary" />
+                    <h4 className="text-sm font-heading font-bold text-foreground">Unlocked with a YAIDEV plan</h4>
+                  </div>
+                  <ul className="grid sm:grid-cols-2 gap-2">
+                    {(Array.isArray(previewResult?.locked) && previewResult.locked.length
+                      ? previewResult.locked
+                      : ["Complete production-ready build", "Full source & specification export", "Live downloadable preview", "Deployment guidance", "Unlimited refinements within your plan"]
+                    ).map((l: string, i: number) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground blur-[0.2px]">
+                        <Lock size={12} className="mt-1 shrink-0 text-muted-foreground/60" /><span>{l}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                    onClick={() => runFullBuild()}
+                    className="w-full sm:w-auto px-7 py-3 rounded-xl font-heading font-semibold text-sm flex items-center justify-center gap-2 text-white hover-glow-blue transition-all"
+                    style={{ background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple)))" }}>
+                    {canUse ? (<><Zap size={15} /> Complete my build (1 AI Coin)</>) : (<><Crown size={15} /> Subscribe to complete this build</>)}
+                  </motion.button>
+                  <button onClick={() => setPhase("prompt")}
+                    className="w-full sm:w-auto px-6 py-3 rounded-xl border border-border bg-card text-foreground font-heading font-semibold text-sm card-glow hover:border-blue/20 transition-all">
+                    Edit my request
+                  </button>
+                </div>
+                <p className="text-center text-[11px] text-muted-foreground">
+                  Your build is saved — it resumes automatically after payment.
+                </p>
+              </div>
+            </motion.div>
+          )}
+
 
           {phase === "result" && (
             <motion.div key="result" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-5xl mx-auto">
@@ -702,7 +911,13 @@ const AiBuilder = ({ onBack, initialPrompt = "" }: { onBack: () => void; initial
         </AnimatePresence>
       </div>
 
-      <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} reason={accessStatus === "locked" ? "out_of_coins" : "upgrade"} />
+      <PaywallModal
+        open={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        reason={paywallReason}
+        buildSessionId={sessionId}
+        buildLabel={selectedCat ? `${selectedCat.label} — ${prompt.slice(0, 60)}${prompt.length > 60 ? "…" : ""}` : undefined}
+      />
     </div>
   );
 };
