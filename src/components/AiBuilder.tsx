@@ -7,7 +7,7 @@ import {
   Download, Copy, RotateCcw, Crown, Coins,
   Activity, Cpu, Zap, CircleDot, AlertCircle, Code2, ExternalLink,
   Paperclip, UploadCloud, X, FileText, FileArchive, FileAudio, FileVideo, File as FileIcon,
-  Share2, Mail, Building2, Rocket
+  Share2, Mail, Building2, Rocket, Eye, Lock
 } from "lucide-react";
 import { useCredits } from "@/hooks/use-credits";
 import PaywallModal from "@/components/PaywallModal";
