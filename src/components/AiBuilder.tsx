@@ -113,13 +113,20 @@ const loadingSteps = [
   { label: "Finalizing deliverable", icon: CircleDot, color: "text-cyan" },
 ];
 
-const AiBuilder = ({ onBack, initialPrompt = "" }: { onBack: () => void; initialPrompt?: string }) => {
+const AiBuilder = ({
+  onBack,
+  initialPrompt = "",
+  resumeSessionId = null,
+}: { onBack: () => void; initialPrompt?: string; resumeSessionId?: string | null }) => {
   const [category, setCategory] = useState<Category | null>(null);
   const [prompt, setPrompt] = useState(initialPrompt);
-  const [phase, setPhase] = useState<"select" | "prompt" | "loading" | "result">("select");
+  const [phase, setPhase] = useState<"select" | "prompt" | "loading" | "preview" | "result">("select");
   const [progress, setProgress] = useState(0);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [paywallReason, setPaywallReason] = useState<"complete_build" | "out_of_coins" | "preview_limit" | "upgrade">("complete_build");
   const [result, setResult] = useState<any>(null);
+  const [previewResult, setPreviewResult] = useState<any>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [images, setImages] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showAgents, setShowAgents] = useState(false);
@@ -129,9 +136,9 @@ const AiBuilder = ({ onBack, initialPrompt = "" }: { onBack: () => void; initial
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const resumeHandled = useRef(false);
 
-
-  const { user, accessStatus, canUse, spendCredit, coinsRemaining, isLifetime } = useCredits();
+  const { user, accessStatus, canUse, coinsRemaining, isLifetime, refreshCredits } = useCredits();
   const navigate = useNavigate();
 
   const selectedCat = categories.find((c) => c.value === category);
@@ -142,6 +149,33 @@ const AiBuilder = ({ onBack, initialPrompt = "" }: { onBack: () => void; initial
     if (val === "agents") { setShowAgents(true); return; }
     setCategory(val); setPhase("prompt");
   };
+
+  // ── Resume a paid build after the payment redirect (or from the dashboard) ──
+  useEffect(() => {
+    if (!resumeSessionId || !user || resumeHandled.current) return;
+    resumeHandled.current = true;
+    (async () => {
+      const { data } = await supabase
+        .from("build_sessions")
+        .select("id, category, prompt, preview, result, state")
+        .eq("id", resumeSessionId)
+        .maybeSingle();
+      if (!data) return;
+      const s = data as any;
+      setSessionId(s.id);
+      setCategory(s.category as Category);
+      setPrompt(s.prompt || "");
+      if (s.result && Object.keys(s.result).length) {
+        setResult(s.result); setPhase("result"); return;
+      }
+      if (s.preview && Object.keys(s.preview).length) setPreviewResult(s.preview);
+      setPhase("preview");
+      toast.success("Payment confirmed — resuming your build");
+      // Continue automatically now that the plan is active.
+      setTimeout(() => runFullBuild(s.id, s.category, s.prompt), 400);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resumeSessionId, user]);
 
   if (showAgents) return <AiAgents onBack={() => setShowAgents(false)} />;
 
