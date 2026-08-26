@@ -807,7 +807,13 @@ const AiBuilder = ({
         </AnimatePresence>
       </div>
 
-      <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} reason={accessStatus === "locked" ? "out_of_coins" : "upgrade"} />
+      <PaywallModal
+        open={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        reason={paywallReason}
+        buildSessionId={sessionId}
+        buildLabel={selectedCat ? `${selectedCat.label} — ${prompt.slice(0, 60)}${prompt.length > 60 ? "…" : ""}` : undefined}
+      />
     </div>
   );
 };
