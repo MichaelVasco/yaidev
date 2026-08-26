@@ -453,9 +453,9 @@ const AiBuilder = ({
             )}
           </div>
 
-          <button onClick={() => setShowPaywall(true)} className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card card-glow hover:border-blue/20 transition-all text-sm">
+          <button onClick={() => { setPaywallReason(canUse ? "upgrade" : "out_of_coins"); setShowPaywall(true); }} className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card card-glow hover:border-blue/20 transition-all text-sm">
             {isLifetime ? (<><Crown size={14} className="text-blue" /><span className="font-medium text-blue">Unlimited</span></>)
-              : accessStatus === "subscribed" ? (<><Sparkles size={14} className="text-purple" /><span className="font-medium text-purple">Pro</span></>)
+              : accessStatus === "locked" ? (<><Crown size={14} className="text-primary" /><span className="font-medium text-primary">Subscribe</span></>)
               : (<><Coins size={14} className={coinsRemaining > 5 ? "text-blue" : "text-destructive"} /><span className={`font-medium ${coinsRemaining > 5 ? "text-foreground" : "text-destructive"}`}>{coinsRemaining} coins</span></>)}
           </button>
         </div>
