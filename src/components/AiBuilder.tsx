@@ -256,7 +256,12 @@ const AiBuilder = ({
         } else if ((data as any)?.error) {
           lastErrorMsg = (data as any).error;
           const fallback = (data as any).fallback === true;
-          if (!fallback) throw new Error(lastErrorMsg);
+          if (!fallback) {
+            const err: any = new Error(lastErrorMsg);
+            err.requiresPayment = (data as any).requiresPayment === true;
+            err.requiresAuth = (data as any).requiresAuth === true;
+            throw err;
+          }
           console.warn(`[${fn}] fallback error attempt ${attempt}:`, lastErrorMsg);
         } else {
           return data;
