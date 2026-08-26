@@ -657,7 +657,7 @@ const AiBuilder = ({
                   <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={handleBuild} disabled={!prompt.trim() || uploading}
                     className="px-6 py-2.5 rounded-lg font-heading font-semibold text-sm flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed text-white hover-glow-blue transition-all duration-300"
                     style={{ background: "linear-gradient(135deg, hsl(var(--color-blue)), hsl(var(--color-purple)))" }}>
-                    <Send size={14} /> {uploading ? "Uploading..." : "Build with AI"}
+                    <Send size={14} /> {uploading ? "Uploading..." : "Generate free preview"}
                   </motion.button>
                 </div>
 
