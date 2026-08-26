@@ -20,6 +20,7 @@ const Index = () => {
   const [showAiBuilder, setShowAiBuilder] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [pendingPrompt, setPendingPrompt] = useState<string>("");
+  const [resumeId, setResumeId] = useState<string | null>(null);
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
@@ -31,19 +32,17 @@ const Index = () => {
       next.delete("upgrade");
       setParams(next, { replace: true });
     }
-    if (params.get("builder") === "1") {
-      if (!loading) {
-        const next = new URLSearchParams(params);
-        next.delete("builder");
-        setParams(next, { replace: true });
-        if (!user) {
-          navigate("/auth?redirect=/?builder=1");
-        } else {
-          setPendingPrompt(readPendingPrompt());
-          clearPendingPrompt();
-          setShowAiBuilder(true);
-        }
-      }
+    const resume = params.get("resume");
+    if (params.get("builder") === "1" && !loading) {
+      const next = new URLSearchParams(params);
+      next.delete("builder");
+      next.delete("resume");
+      setParams(next, { replace: true });
+      // Anyone can open the builder; authentication is required at submit time.
+      setPendingPrompt(readPendingPrompt());
+      clearPendingPrompt();
+      if (resume) setResumeId(resume);
+      setShowAiBuilder(true);
     }
   }, [params, setParams, user, loading, navigate]);
 
@@ -57,9 +56,11 @@ const Index = () => {
     return (
       <AiBuilder
         initialPrompt={pendingPrompt}
+        resumeSessionId={resumeId}
         onBack={() => {
           setShowAiBuilder(false);
           setPendingPrompt("");
+          setResumeId(null);
         }}
       />
     );
