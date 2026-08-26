@@ -275,53 +275,118 @@ const AiBuilder = ({
     throw new Error(lastErrorMsg);
   };
 
+  const payloadAttachments = () => attachments.map((a) => ({
+    name: a.name, mime: a.mime, size: a.size, kind: a.kind,
+    dataUrl: a.kind === "image" ? a.dataUrl : undefined,
+    textContent: a.kind === "text" ? a.textContent : undefined,
+  }));
+
+  const startTicker = () => {
+    setProgress(5);
+    return setInterval(() => {
+      setProgress((p) => (p < 90 ? p + Math.max(1, Math.round((92 - p) / 12)) : p));
+    }, 600);
+  };
+
+  /** Step 1 — free, limited preview. Never consumes coins. */
   const handleBuild = async () => {
     if (!prompt.trim() || !category) return;
     if (uploading) { toast.error("Please wait for uploads to finish"); return; }
-    if (!user) { navigate("/auth?redirect=/"); return; }
-    if (!canUse) { setShowPaywall(true); return; }
-    const spend = await spendCredit();
-    if (!spend.ok) { setShowPaywall(true); return; }
+    if (!user) {
+      // Preserve the work, then send the user through auth and straight back.
+      try {
+        sessionStorage.setItem("yaidev:pendingPrompt", prompt.trim());
+        sessionStorage.setItem("yaidev:pendingCategory", category);
+      } catch { /* ignore */ }
+      navigate(`/auth?redirect=${encodeURIComponent("/?builder=1")}`);
+      return;
+    }
 
     setPhase("loading");
-    setProgress(5);
     setError(null);
     setResult(null);
+    setPreviewResult(null);
     setImages([]);
-
-    const tick = setInterval(() => {
-      setProgress((p) => (p < 90 ? p + Math.max(1, Math.round((92 - p) / 12)) : p));
-    }, 600);
-
-    const payloadAttachments = attachments.map((a) => ({
-      name: a.name, mime: a.mime, size: a.size, kind: a.kind,
-      dataUrl: a.kind === "image" ? a.dataUrl : undefined,
-      textContent: a.kind === "text" ? a.textContent : undefined,
-    }));
+    const tick = startTicker();
 
     try {
-      if (isImage) {
-        const data = await invokeWithRetry("ai-image", {
-          category, prompt, variants: 3, attachments: payloadAttachments,
-        });
-        setImages((data as any).images || []);
-      } else {
-        const fullPrompt = isVideo
-          ? `${prompt}\n\nProduction specs:\n- Style: ${videoStyle}\n- Duration: ${videoDuration}\n- Resolution: ${videoResolution}`
-          : prompt;
-        const data = await invokeWithRetry("ai-generate", {
-          category, prompt: fullPrompt, attachments: payloadAttachments,
-        });
-        setResult((data as any).result);
-      }
+      // Persist the build so it survives payment redirects, refreshes and devices.
+      let sid = sessionId;
+      const { data: created } = await supabase.from("build_sessions").insert({
+        user_id: user.id,
+        category,
+        prompt: prompt.trim(),
+        state: "preview",
+        metadata: { attachments: attachments.map((a) => ({ name: a.name, kind: a.kind })) },
+      }).select("id").single();
+      sid = (created as any)?.id ?? sid;
+      setSessionId(sid);
+
+      const data = await invokeWithRetry("ai-generate", {
+        category, prompt: prompt.trim(), mode: "preview",
+        build_session_id: sid, attachments: payloadAttachments(),
+      });
+      setPreviewResult((data as any).result);
       setProgress(100);
-      setTimeout(() => setPhase("result"), 350);
+      setTimeout(() => setPhase("preview"), 350);
     } catch (e: any) {
-      console.error("[handleBuild] failed:", e);
+      console.error("[handleBuild:preview] failed:", e);
       const msg = e?.message || "Temporary server issue. Please try again.";
-      setError(msg);
-      toast.error(msg);
+      if (e?.requiresPayment) {
+        setPaywallReason("preview_limit");
+        setShowPaywall(true);
+      } else {
+        setError(msg);
+        toast.error(msg);
+      }
       setPhase("prompt");
+    } finally {
+      clearInterval(tick);
+    }
+  };
+
+  /** Step 2 — the complete deliverable. Server deducts coins before generating. */
+  const runFullBuild = async (sid?: string | null, cat?: string | null, text?: string) => {
+    const useSid = sid ?? sessionId;
+    const useCat = (cat ?? category) as string | null;
+    const useText = (text ?? prompt).trim();
+    if (!useCat || !useText) return;
+    if (!user) { navigate(`/auth?redirect=${encodeURIComponent("/?builder=1")}`); return; }
+    if (!canUse) {
+      setPaywallReason("complete_build");
+      setShowPaywall(true);
+      return;
+    }
+
+    setPhase("loading");
+    setError(null);
+    const tick = startTicker();
+    try {
+      const fullPrompt = isVideo
+        ? `${useText}\n\nProduction specs:\n- Style: ${videoStyle}\n- Duration: ${videoDuration}\n- Resolution: ${videoResolution}`
+        : useText;
+      const data = await invokeWithRetry("ai-generate", {
+        category: useCat, prompt: fullPrompt, mode: "full",
+        build_session_id: useSid, attachments: payloadAttachments(),
+      });
+      setResult((data as any).result);
+      setProgress(100);
+      await refreshCredits();
+      setTimeout(() => setPhase("result"), 350);
+      toast.success("Build complete — 1 AI Coin used");
+    } catch (e: any) {
+      console.error("[runFullBuild] failed:", e);
+      if (e?.requiresPayment) {
+        setPaywallReason("out_of_coins");
+        setShowPaywall(true);
+        setPhase("preview");
+      } else {
+        const msg = e?.message || "Temporary server issue. Please try again.";
+        setError(msg);
+        toast.error(msg);
+        setPhase(previewResult ? "preview" : "prompt");
+      }
+      await refreshCredits();
     } finally {
       clearInterval(tick);
     }
@@ -329,7 +394,8 @@ const AiBuilder = ({
 
   const handleReset = () => {
     setPhase("select"); setCategory(null); setPrompt("");
-    setProgress(0); setResult(null); setImages([]); setError(null);
+    setProgress(0); setResult(null); setPreviewResult(null); setSessionId(null);
+    setImages([]); setError(null);
     attachments.forEach((a) => a.previewUrl && URL.revokeObjectURL(a.previewUrl));
     setAttachments([]);
   };
