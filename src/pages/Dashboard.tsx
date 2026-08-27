@@ -106,7 +106,7 @@ const Dashboard = () => {
 
           {/* Coins */}
           <Card>
-            <CardHeader icon={<Coins size={16} />} title="Coin Balance" />
+            <CardHeader icon={<Coins size={16} />} title="AI Coin Balance" />
             {credits?.lifetime_unlimited ? (
               <div className="flex items-center gap-2 text-blue font-heading font-bold text-2xl">
                 <InfinityIcon size={28} /> Unlimited
@@ -114,28 +114,35 @@ const Dashboard = () => {
             ) : (
               <>
                 <div className="flex items-baseline gap-1 mb-2">
-                  <span className="font-heading font-bold text-3xl text-foreground">{(credits?.daily_free_remaining ?? 0) + (credits?.paid_balance ?? 0)}</span>
-                  <span className="text-xs text-muted-foreground">coins available</span>
+                  <span className="font-heading font-bold text-3xl text-foreground">{credits?.paid_balance ?? 0}</span>
+                  <span className="text-xs text-muted-foreground">coins remaining</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="rounded-md bg-muted/50 p-2">
-                    <p className="text-muted-foreground">Daily free</p>
-                    <p className="font-semibold text-foreground">{credits?.daily_free_remaining ?? 0} / 10</p>
+                    <p className="text-muted-foreground">Plan allocation</p>
+                    <p className="font-semibold text-foreground">{subscription?.coins_granted ?? 0}</p>
                   </div>
                   <div className="rounded-md bg-muted/50 p-2">
-                    <p className="text-muted-foreground">Paid</p>
-                    <p className="font-semibold text-foreground">{credits?.paid_balance ?? 0}</p>
+                    <p className="text-muted-foreground">Coins used</p>
+                    <p className="font-semibold text-foreground">{credits?.total_used ?? 0}</p>
                   </div>
                 </div>
+                {(credits?.paid_balance ?? 0) === 0 && (
+                  <Link to="/pricing" className="text-xs text-primary font-medium hover:underline mt-2 inline-block">Subscribe to get coins →</Link>
+                )}
               </>
             )}
           </Card>
 
-          {/* Reset countdown */}
+          {/* Renewal */}
           <Card>
-            <CardHeader icon={<Clock size={16} />} title="Daily Reset" />
-            <div className="font-mono text-2xl font-bold text-foreground tracking-wider">{countdown || "—"}</div>
-            <p className="text-xs text-muted-foreground mt-1">Free coins refresh in this much time.</p>
+            <CardHeader icon={<Clock size={16} />} title="Billing Period" />
+            <div className="font-heading text-lg font-bold text-foreground">
+              {subscription?.expires_at ? new Date(subscription.expires_at).toLocaleDateString() : "No active plan"}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {subscription?.expires_at ? "Your coins refill on this date." : "YAIDEV is paid-only — subscribe to start building."}
+            </p>
           </Card>
 
           {/* Subscription */}
