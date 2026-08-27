@@ -22,7 +22,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { user, profile, credits, subscription, loading, signOut } = useAuth();
   const [txs, setTxs] = useState<Tx[]>([]);
-  const [countdown, setCountdown] = useState("");
+  const [builds, setBuilds] = useState<any[]>([]);
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth?redirect=/dashboard", { replace: true });
@@ -35,20 +35,13 @@ const Dashboard = () => {
   }, [user]);
 
   useEffect(() => {
-    if (!credits) return;
-    const update = () => {
-      const reset = new Date(new Date(credits.daily_reset_at).getTime() + 24 * 60 * 60 * 1000);
-      const diff = reset.getTime() - Date.now();
-      if (diff <= 0) { setCountdown("Resetting…"); return; }
-      const h = Math.floor(diff / 3.6e6);
-      const m = Math.floor((diff % 3.6e6) / 6e4);
-      const s = Math.floor((diff % 6e4) / 1000);
-      setCountdown(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`);
-    };
-    update();
-    const t = setInterval(update, 1000);
-    return () => clearInterval(t);
-  }, [credits]);
+    if (!user) return;
+    supabase.from("build_sessions")
+      .select("id, category, prompt, state, created_at")
+      .eq("user_id", user.id).neq("state", "completed")
+      .order("created_at", { ascending: false }).limit(5)
+      .then(({ data }) => setBuilds(data || []));
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
