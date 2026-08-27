@@ -10,6 +10,7 @@ const BodySchema = z.object({
   plan_slug: z.string().min(2).max(64),
   billing_cycle: z.enum(["monthly", "yearly"]).default("monthly"),
   callback_url: z.string().url(),
+  build_session_id: z.string().uuid().nullable().optional(),
 });
 
 // Map "<slug>_<cycle>" -> env var holding the Paystack plan code for that combination.
@@ -44,7 +45,7 @@ Deno.serve(async (req) => {
     if (!parsed.success) {
       return json({ ok: false, error: "invalid_body", detail: parsed.error.flatten(), trace }, 200);
     }
-    const { plan_slug, billing_cycle, callback_url } = parsed.data;
+    const { plan_slug, billing_cycle, callback_url, build_session_id = null } = parsed.data;
     trace.plan_slug = plan_slug;
     trace.billing_cycle = billing_cycle;
     console.log("[paystack-init]", plan_slug, billing_cycle, "user:", user.id);
@@ -95,6 +96,7 @@ Deno.serve(async (req) => {
         user_id: user.id,
         plan_slug: plan.slug,
         billing_cycle,
+        build_session_id,
         custom_fields: [
           { display_name: "Plan", variable_name: "plan", value: plan.name },
           { display_name: "Cycle", variable_name: "cycle", value: billing_cycle },
