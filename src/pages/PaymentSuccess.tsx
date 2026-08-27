@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Check, Loader2, XCircle, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { RESUME_BUILD_KEY } from "@/components/PaywallModal";
 
 const PaymentSuccess = () => {
   const [params] = useSearchParams();
@@ -11,6 +12,7 @@ const PaymentSuccess = () => {
   const { user, loading, refreshAll } = useAuth();
   const [state, setState] = useState<"verifying" | "success" | "error">("verifying");
   const [result, setResult] = useState<{ plan?: string; coins?: number; renewal?: string; error?: string }>({});
+  const [resumeBuild, setResumeBuild] = useState<string | null>(null);
 
   const reference = params.get("reference") || params.get("trxref");
 
@@ -69,7 +71,7 @@ const PaymentSuccess = () => {
             <h1 className="font-heading font-bold text-2xl text-foreground mb-2 flex items-center justify-center gap-2">
               <Sparkles size={20} className="text-primary" /> Welcome to YAIDEV Premium
             </h1>
-            <p className="text-sm text-muted-foreground mb-5">Your subscription is now active.</p>
+            <p className="text-sm text-muted-foreground mb-5">{resumeBuild ? "Your subscription is active — your saved build is resuming now." : "Your subscription is now active."}</p>
             <div className="space-y-2 bg-muted/40 rounded-lg p-4 mb-5 text-sm text-left">
               {result.plan && <Row label="Plan" value={result.plan.toUpperCase()} />}
               {result.coins !== undefined && <Row label="Credits added" value={`+${result.coins}`} />}
@@ -78,7 +80,7 @@ const PaymentSuccess = () => {
             <Link to="/dashboard" className="inline-block w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90">
               Go to dashboard
             </Link>
-            <p className="text-[11px] text-muted-foreground mt-3">Redirecting automatically…</p>
+            <p className="text-[11px] text-muted-foreground mt-3">{resumeBuild ? "Resuming your build automatically…" : "Redirecting automatically…"}</p>
           </>
         )}
 
