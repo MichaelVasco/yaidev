@@ -144,7 +144,7 @@ const AuthPage = () => {
           {mode === "signup" ? "Create your account" : mode === "forgot" ? "Reset password" : "Welcome back"}
         </h1>
         <p className="text-sm text-muted-foreground mb-6">
-          {mode === "signup" ? "Start building with 10 free coins every day."
+          {mode === "signup" ? "Create your account, then subscribe to start building."
             : mode === "forgot" ? "Enter your email to get a reset link."
             : "Sign in to continue building."}
         </p>

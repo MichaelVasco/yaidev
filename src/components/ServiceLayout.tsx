@@ -27,7 +27,7 @@ export default function ServiceLayout({ title, subtitle, icon, children, onSearc
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading…</div>;
   }
 
-  const coins = (credits?.daily_free_remaining ?? 0) + (credits?.paid_balance ?? 0);
+  const coins = credits?.paid_balance ?? 0;
   const unlimited = !!credits?.lifetime_unlimited;
   const plan = subscription?.plan;
 

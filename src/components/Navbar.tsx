@@ -100,15 +100,28 @@ const Navbar = ({ onOpenBuilder }: { onOpenBuilder?: () => void }) => {
     [],
   );
 
-  const CoinBadge = () => (
-    <Link to="/dashboard" onClick={closeMenu} className="relative z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card hover:border-primary/30 active:scale-95 transition-all text-xs font-semibold text-foreground touch-manipulation cursor-pointer pointer-events-auto">
-      {credits?.lifetime_unlimited ? (
-        <><Crown size={12} className="text-blue" /> Unlimited</>
-      ) : (
-        <><Coins size={12} className="text-blue" /> {totalCoinsAvailable}</>
-      )}
-    </Link>
-  );
+  const CoinBadge = () => {
+    const noCoins = !credits?.lifetime_unlimited && totalCoinsAvailable <= 0;
+    return (
+      <Link
+        to={noCoins ? "/pricing" : "/dashboard"}
+        onClick={closeMenu}
+        className={`relative z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full border active:scale-95 transition-all text-xs font-semibold touch-manipulation cursor-pointer pointer-events-auto ${
+          noCoins
+            ? "border-primary/40 bg-primary/10 text-primary hover:bg-primary/15"
+            : "border-border bg-card text-foreground hover:border-primary/30"
+        }`}
+      >
+        {credits?.lifetime_unlimited ? (
+          <><Crown size={12} className="text-blue" /> Unlimited</>
+        ) : noCoins ? (
+          <><Sparkles size={12} /> Subscribe</>
+        ) : (
+          <><Coins size={12} className="text-blue" /> {totalCoinsAvailable}</>
+        )}
+      </Link>
+    );
+  };
 
   return (
     <header

@@ -22,7 +22,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { user, profile, credits, subscription, loading, signOut } = useAuth();
   const [txs, setTxs] = useState<Tx[]>([]);
-  const [countdown, setCountdown] = useState("");
+  const [builds, setBuilds] = useState<any[]>([]);
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth?redirect=/dashboard", { replace: true });
@@ -35,20 +35,13 @@ const Dashboard = () => {
   }, [user]);
 
   useEffect(() => {
-    if (!credits) return;
-    const update = () => {
-      const reset = new Date(new Date(credits.daily_reset_at).getTime() + 24 * 60 * 60 * 1000);
-      const diff = reset.getTime() - Date.now();
-      if (diff <= 0) { setCountdown("Resetting…"); return; }
-      const h = Math.floor(diff / 3.6e6);
-      const m = Math.floor((diff % 3.6e6) / 6e4);
-      const s = Math.floor((diff % 6e4) / 1000);
-      setCountdown(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`);
-    };
-    update();
-    const t = setInterval(update, 1000);
-    return () => clearInterval(t);
-  }, [credits]);
+    if (!user) return;
+    supabase.from("build_sessions")
+      .select("id, category, prompt, state, created_at")
+      .eq("user_id", user.id).neq("state", "completed")
+      .order("created_at", { ascending: false }).limit(5)
+      .then(({ data }) => setBuilds(data || []));
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -106,7 +99,7 @@ const Dashboard = () => {
 
           {/* Coins */}
           <Card>
-            <CardHeader icon={<Coins size={16} />} title="Coin Balance" />
+            <CardHeader icon={<Coins size={16} />} title="AI Coin Balance" />
             {credits?.lifetime_unlimited ? (
               <div className="flex items-center gap-2 text-blue font-heading font-bold text-2xl">
                 <InfinityIcon size={28} /> Unlimited
@@ -114,28 +107,35 @@ const Dashboard = () => {
             ) : (
               <>
                 <div className="flex items-baseline gap-1 mb-2">
-                  <span className="font-heading font-bold text-3xl text-foreground">{(credits?.daily_free_remaining ?? 0) + (credits?.paid_balance ?? 0)}</span>
-                  <span className="text-xs text-muted-foreground">coins available</span>
+                  <span className="font-heading font-bold text-3xl text-foreground">{credits?.paid_balance ?? 0}</span>
+                  <span className="text-xs text-muted-foreground">coins remaining</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="rounded-md bg-muted/50 p-2">
-                    <p className="text-muted-foreground">Daily free</p>
-                    <p className="font-semibold text-foreground">{credits?.daily_free_remaining ?? 0} / 10</p>
+                    <p className="text-muted-foreground">Plan allocation</p>
+                    <p className="font-semibold text-foreground">{subscription?.coins_granted ?? 0}</p>
                   </div>
                   <div className="rounded-md bg-muted/50 p-2">
-                    <p className="text-muted-foreground">Paid</p>
-                    <p className="font-semibold text-foreground">{credits?.paid_balance ?? 0}</p>
+                    <p className="text-muted-foreground">Coins used</p>
+                    <p className="font-semibold text-foreground">{credits?.total_used ?? 0}</p>
                   </div>
                 </div>
+                {(credits?.paid_balance ?? 0) === 0 && (
+                  <Link to="/pricing" className="text-xs text-primary font-medium hover:underline mt-2 inline-block">Subscribe to get coins →</Link>
+                )}
               </>
             )}
           </Card>
 
-          {/* Reset countdown */}
+          {/* Renewal */}
           <Card>
-            <CardHeader icon={<Clock size={16} />} title="Daily Reset" />
-            <div className="font-mono text-2xl font-bold text-foreground tracking-wider">{countdown || "—"}</div>
-            <p className="text-xs text-muted-foreground mt-1">Free coins refresh in this much time.</p>
+            <CardHeader icon={<Clock size={16} />} title="Billing Period" />
+            <div className="font-heading text-lg font-bold text-foreground">
+              {subscription?.expires_at ? new Date(subscription.expires_at).toLocaleDateString() : "No active plan"}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {subscription?.expires_at ? "Your coins refill on this date." : "YAIDEV is paid-only — subscribe to start building."}
+            </p>
           </Card>
 
           {/* Subscription */}
@@ -168,6 +168,30 @@ const Dashboard = () => {
             <p className="text-xs text-muted-foreground mt-1">AI generations to date.</p>
           </Card>
         </div>
+
+        {builds.length > 0 && (
+          <div className="mb-6">
+            <Card>
+              <CardHeader icon={<Sparkles size={16} />} title="Saved Builds" />
+              <div className="divide-y divide-border">
+                {builds.map((b) => (
+                  <div key={b.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                    <div className="min-w-0">
+                      <p className="font-medium text-foreground capitalize truncate">{b.category}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{b.prompt}</p>
+                    </div>
+                    <Link
+                      to={`/?builder=1&resume=${b.id}`}
+                      className="flex-shrink-0 text-[11px] font-semibold text-primary hover:underline"
+                    >
+                      Resume build →
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        )}
 
         <Card>
           <CardHeader icon={<Receipt size={16} />} title="Transaction History" />
