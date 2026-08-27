@@ -86,7 +86,7 @@ const BuildConfirmModal = ({ onConfirm }: Props) => {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <button
                 onClick={close}
                 className="py-2.5 rounded-lg text-sm font-semibold bg-muted text-foreground hover:bg-muted/70 transition-colors"

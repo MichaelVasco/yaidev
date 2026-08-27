@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import FloatingParticles from "@/components/FloatingParticles";
+import { BUILDER_CONFIRM_EVENT } from "@/lib/openBuilder";
 import {
   Monitor, Smartphone, Code2, Gamepad2, Bot, Palette,
   Laptop, BrainCircuit, Globe, Cpu, Terminal, Layers, ChevronDown
@@ -38,9 +39,13 @@ const Hero = () => {
   const handleEnter = (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     setEntered(true);
+    // Navigate to the existing About section, then open the existing
+    // "Ready To Build?" popup on top of it (state-driven via the global
+    // builder-confirm event consumed by BuildConfirmModal in Index).
     setTimeout(() => {
       window.history.pushState(null, "", "/#about");
       document.getElementById("about")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.dispatchEvent(new CustomEvent(BUILDER_CONFIRM_EVENT, { detail: { prompt: "" } }));
     }, 700);
   };
 
