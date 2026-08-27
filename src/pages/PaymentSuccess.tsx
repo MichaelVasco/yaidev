@@ -32,9 +32,19 @@ const PaymentSuccess = () => {
       setResult({
         plan: act.plan || (data as any).plan,
         coins: act.coins_added ?? (data as any).coins_added,
-        renewal: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+        renewal: act.expires_at
+          ? new Date(act.expires_at).toLocaleDateString()
+          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(),
       });
-      setTimeout(() => navigate("/dashboard"), 6000);
+
+      // Resume the build the user was paying to complete.
+      let resume: string | null = null;
+      try {
+        resume = localStorage.getItem(RESUME_BUILD_KEY);
+        if (resume) localStorage.removeItem(RESUME_BUILD_KEY);
+      } catch { /* storage unavailable */ }
+      setResumeBuild(resume);
+      setTimeout(() => navigate(resume ? `/?builder=1&resume=${resume}` : "/dashboard"), resume ? 2500 : 6000);
     })();
   }, [user, loading, reference]);
 
