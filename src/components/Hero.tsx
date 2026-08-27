@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import FloatingParticles from "@/components/FloatingParticles";
+import { BUILDER_CONFIRM_EVENT } from "@/lib/openBuilder";
 import {
   Monitor, Smartphone, Code2, Gamepad2, Bot, Palette,
   Laptop, BrainCircuit, Globe, Cpu, Terminal, Layers, ChevronDown
