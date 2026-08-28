@@ -49,16 +49,29 @@ const HEADLINES: Record<string, { title: string; body: string }> = {
   },
 };
 
+type Ccy = "NGN" | "USD" | "EUR" | "GBP";
+// Display-only FX rates (NGN -> target). Payment always settles in the plan's
+// Paystack currency; changing the display currency never changes the plan.
+const RATES: Record<Ccy, number> = { NGN: 1, USD: 1 / 1600, EUR: 1 / 1750, GBP: 1 / 2050 };
+const SYMBOL: Record<Ccy, string> = { NGN: "₦", USD: "$", EUR: "€", GBP: "£" };
+
 const PaywallModal = ({ open, onClose, reason = "upgrade", buildSessionId = null, buildLabel }: Props) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
+  const [ccy, setCcy] = useState<Ccy>("NGN");
   const [loading, setLoading] = useState(true);
-  const [paying, setPaying] = useState<string | null>(null);
+  // Single source of truth for the checkout selection: the plan row id.
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [paying, setPaying] = useState(false);
 
   useEffect(() => {
     if (!open) return;
+    // Reset all temporary checkout state whenever the modal opens.
+    setSelectedPlanId(null);
+    setPaying(false);
+    setCycle("monthly");
     setLoading(true);
     supabase.from("subscription_plans")
       .select("id,slug,name,price_cents,currency,monthly_credits,features,billing_cycle")
@@ -66,11 +79,23 @@ const PaywallModal = ({ open, onClose, reason = "upgrade", buildSessionId = null
       .then(({ data }) => { setPlans((data || []) as unknown as Plan[]); setLoading(false); });
   }, [open]);
 
+  // Switching interval invalidates any previously selected plan.
+  useEffect(() => { setSelectedPlanId(null); }, [cycle]);
+
   const visible = useMemo(() => plans.filter((p) => p.billing_cycle === cycle), [plans, cycle]);
 
-  const subscribe = async (slug: string) => {
+  const fmt = (kobo: number, currency: string) => {
+    const base = kobo / 100;
+    if (currency !== "NGN") return `${base.toLocaleString()} ${currency}`;
+    const val = base * RATES[ccy];
+    return `${SYMBOL[ccy]}${val.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+  };
+
+  const subscribe = async (plan: Plan) => {
     if (!user) { navigate("/auth?redirect=/pricing"); return; }
-    setPaying(slug);
+    // Explicitly set the selection before checkout so stale state can never leak.
+    setSelectedPlanId(plan.id);
+    setPaying(true);
     try {
       // Remember the in-flight build so it resumes after the payment redirect.
       try {
@@ -80,9 +105,11 @@ const PaywallModal = ({ open, onClose, reason = "upgrade", buildSessionId = null
 
       const { data, error } = await supabase.functions.invoke("paystack-init", {
         body: {
-          plan_slug: slug,
-          billing_cycle: cycle,
+          plan_id: plan.id,
+          plan_slug: plan.slug,
+          billing_cycle: plan.billing_cycle,
           build_session_id: buildSessionId,
+          display_currency: ccy,
           callback_url: `${window.location.origin}/payment/success`,
         },
       });
@@ -103,7 +130,8 @@ const PaywallModal = ({ open, onClose, reason = "upgrade", buildSessionId = null
     } catch (e: any) {
       console.error("[subscribe] error:", e);
       toast.error(e?.message || "Could not start checkout");
-      setPaying(null);
+      setPaying(false);
+      setSelectedPlanId(null);
     }
   };
 
