@@ -41,6 +41,8 @@ async function resolveUserAndPlan(admin: any, data: any) {
   const meta = data.metadata || {};
   let userId = meta.user_id as string | undefined;
   let planSlug = meta.plan_slug as string | undefined;
+  let cycle = (meta.billing_cycle === "yearly" ? "yearly" : "monthly") as "monthly" | "yearly";
+  const planId = meta.plan_id as string | undefined;
 
   if (!userId) {
     const email = data.customer?.email;
@@ -49,32 +51,42 @@ async function resolveUserAndPlan(admin: any, data: any) {
       userId = users?.users?.find((u: any) => (u.email || "").toLowerCase() === email.toLowerCase())?.id;
     }
   }
-  if (!planSlug) {
-    const planCode = data.plan?.plan_code || data.plan_object?.plan_code;
-    if (planCode) {
-      const { data: p } = await admin.from("subscription_plans").select("slug").eq("paystack_plan_code", planCode).maybeSingle();
-      planSlug = p?.slug;
-    }
+
+  // Recurring charges carry the Paystack plan code, not our metadata.
+  const planCode = data.plan?.plan_code || data.plan_object?.plan_code || (typeof data.plan === "string" ? data.plan : null);
+  if ((!planSlug || !meta.billing_cycle) && planCode) {
+    const { data: p } = await admin
+      .from("subscription_plans").select("slug,billing_cycle")
+      .eq("paystack_plan_code", planCode).limit(1).maybeSingle();
+    if (p) { planSlug = planSlug || p.slug; cycle = p.billing_cycle; }
   }
-  return { userId, planSlug };
+  return { userId, planSlug, cycle, planId };
 }
 
 async function handleChargeSuccess(admin: any, data: any) {
   const reference = data.reference as string;
-  const { userId, planSlug } = await resolveUserAndPlan(admin, data);
+  const { userId, planSlug, cycle, planId } = await resolveUserAndPlan(admin, data);
   if (!userId || !planSlug) return;
 
   const { data: existing } = await admin
     .from("transactions").select("status").eq("reference", reference).maybeSingle();
   if (existing?.status === "success") return;
 
-  const { data: plan } = await admin
-    .from("subscription_plans").select("monthly_credits").eq("slug", planSlug).maybeSingle();
-  const coins = plan?.monthly_credits ?? 0;
+  // Resolve the EXACT plan row (slug + billing cycle) so coins are never taken
+  // from a different tier or interval.
+  let planQ = admin.from("subscription_plans").select("slug,name,monthly_credits,billing_cycle");
+  planQ = planId ? planQ.eq("id", planId) : planQ.eq("slug", planSlug).eq("billing_cycle", cycle);
+  const { data: plan } = await planQ.maybeSingle();
+  if (!plan) {
+    console.error("[paystack-webhook] plan_not_resolved", { planSlug, cycle, planId, reference });
+    return;
+  }
+  const coins = plan.monthly_credits ?? 0;
+  const expires = new Date(Date.now() + (plan.billing_cycle === "yearly" ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString();
 
   await admin.from("transactions").upsert({
     user_id: userId,
-    plan: planSlug,
+    plan: plan.slug,
     provider: "paystack",
     amount_cents: data.amount,
     currency: data.currency,
@@ -85,10 +97,11 @@ async function handleChargeSuccess(admin: any, data: any) {
 
   await admin.from("subscriptions").insert({
     user_id: userId,
-    plan: planSlug,
+    plan: plan.slug,
     status: "active",
     coins_granted: coins,
-    expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    billing_cycle: plan.billing_cycle,
+    expires_at: expires,
   });
 
   // Reset paid_balance to the plan allocation (each billing cycle)
@@ -96,9 +109,10 @@ async function handleChargeSuccess(admin: any, data: any) {
 
   await admin.from("notifications").insert({
     user_id: userId,
-    type: "payment_success",
+    kind: "payment_success",
     title: "Payment received",
-    body: `Your ${planSlug} plan is active. ${coins} AI Coins added.`,
+    body: `${plan.name} is active. ${coins} AI Coins added.`,
+    link: "/dashboard",
   });
 }
 
@@ -114,7 +128,7 @@ async function handleFailure(admin: any, data: any, type: string) {
 
   await admin.from("notifications").insert({
     user_id: userId,
-    type: "payment_failed",
+    kind: "payment_failed",
     title: type === "invoice.payment_failed" ? "Renewal payment failed" : "Subscription ended",
     body: type === "invoice.payment_failed"
       ? "We couldn't renew your YAIDEV subscription. Premium access is suspended until payment succeeds."
