@@ -183,6 +183,20 @@ const PaywallModal = ({ open, onClose, reason = "upgrade", buildSessionId = null
               </div>
             </div>
 
+            <div className="flex justify-center mb-5">
+              <div className="inline-flex rounded-full border border-border p-1 bg-muted/40">
+                {(["NGN", "USD", "EUR", "GBP"] as Ccy[]).map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setCcy(c)}
+                    className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-colors ${ccy === c ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {loading ? (
               <div className="py-12 flex justify-center"><Loader2 className="animate-spin text-muted-foreground" /></div>
             ) : (
@@ -190,16 +204,20 @@ const PaywallModal = ({ open, onClose, reason = "upgrade", buildSessionId = null
                 {visible.map((p, i) => {
                   const Icon = icons[i % icons.length] || Sparkles;
                   const popular = p.slug === "business";
+                  const isSelected = selectedPlanId === p.id;
                   return (
-                    <div key={p.id} className={`rounded-xl border-2 p-4 flex flex-col ${popular ? "border-primary bg-primary/5" : "border-border"}`}>
+                    <div key={p.id} className={`rounded-xl border-2 p-4 flex flex-col ${isSelected ? "border-primary ring-2 ring-primary/30" : popular ? "border-primary bg-primary/5" : "border-border"}`}>
                       <div className="flex items-center gap-2 mb-1">
                         <Icon size={16} className="text-primary" />
                         <p className="font-heading font-bold text-foreground text-sm">{p.name}</p>
                       </div>
                       <p className="font-heading font-bold text-2xl text-foreground">
-                        ${(p.price_cents / 100).toLocaleString()}
-                        <span className="text-xs text-muted-foreground font-normal">/{cycle === "yearly" ? "yr" : "mo"}</span>
+                        {fmt(p.price_cents, p.currency)}
+                        <span className="text-xs text-muted-foreground font-normal">/{p.billing_cycle === "yearly" ? "yr" : "mo"}</span>
                       </p>
+                      {ccy !== "NGN" && p.currency === "NGN" && (
+                        <p className="text-[10px] text-muted-foreground">Billed in NGN — ₦{(p.price_cents / 100).toLocaleString()}</p>
+                      )}
                       <p className="text-xs text-primary font-semibold mb-3">{p.monthly_credits.toLocaleString()} AI Coins</p>
                       <ul className="space-y-1 text-[12px] mb-4 flex-1">
                         {(p.features || []).slice(0, 4).map((f, j) => (
@@ -207,18 +225,19 @@ const PaywallModal = ({ open, onClose, reason = "upgrade", buildSessionId = null
                         ))}
                       </ul>
                       <button
-                        onClick={() => subscribe(p.slug)}
-                        disabled={paying === p.slug}
+                        onClick={() => subscribe(p)}
+                        disabled={paying}
                         className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-1"
                       >
-                        {paying === p.slug && <Loader2 className="animate-spin" size={12} />}
-                        {paying === p.slug ? "Redirecting…" : "Subscribe & continue build"}
+                        {paying && isSelected && <Loader2 className="animate-spin" size={12} />}
+                        {paying && isSelected ? "Redirecting…" : "Subscribe & continue build"}
                       </button>
                     </div>
                   );
                 })}
               </div>
             )}
+
 
             <p className="text-center text-[11px] text-muted-foreground mt-4">
               Secure payment by Paystack · Cards, bank transfer & USSD · Cancel anytime

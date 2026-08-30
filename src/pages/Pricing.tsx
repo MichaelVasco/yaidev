@@ -50,14 +50,16 @@ const Pricing = () => {
   const currentSlug = subscription?.plan as string | undefined;
   const visiblePlans = useMemo(() => plans.filter(p => p.billing_cycle === cycle), [plans, cycle]);
 
-  const subscribe = async (slug: string) => {
+  const subscribe = async (plan: Plan) => {
     if (!user) { navigate(`/auth?redirect=/pricing`); return; }
-    setPaying(slug);
+    setPaying(plan.id);
     try {
       const { data, error } = await supabase.functions.invoke("paystack-init", {
         body: {
-          plan_slug: slug,
-          billing_cycle: cycle,
+          plan_id: plan.id,
+          plan_slug: plan.slug,
+          billing_cycle: plan.billing_cycle,
+          display_currency: ccy,
           callback_url: `${window.location.origin}/payment/success`,
         },
       });
