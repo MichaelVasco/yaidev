@@ -50,14 +50,16 @@ const Pricing = () => {
   const currentSlug = subscription?.plan as string | undefined;
   const visiblePlans = useMemo(() => plans.filter(p => p.billing_cycle === cycle), [plans, cycle]);
 
-  const subscribe = async (slug: string) => {
+  const subscribe = async (plan: Plan) => {
     if (!user) { navigate(`/auth?redirect=/pricing`); return; }
-    setPaying(slug);
+    setPaying(plan.id);
     try {
       const { data, error } = await supabase.functions.invoke("paystack-init", {
         body: {
-          plan_slug: slug,
-          billing_cycle: cycle,
+          plan_id: plan.id,
+          plan_slug: plan.slug,
+          billing_cycle: plan.billing_cycle,
+          display_currency: ccy,
           callback_url: `${window.location.origin}/payment/success`,
         },
       });
@@ -188,8 +190,8 @@ const Pricing = () => {
                   </ul>
 
                   <button
-                    onClick={() => subscribe(p.slug)}
-                    disabled={paying === p.slug || isCurrent}
+                    onClick={() => subscribe(p)}
+                    disabled={paying === p.id || isCurrent}
                     className={`w-full py-3 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
                       isCurrent
                         ? "bg-muted text-muted-foreground cursor-not-allowed"
@@ -198,8 +200,8 @@ const Pricing = () => {
                           : "bg-foreground text-background hover:opacity-90"
                     } disabled:opacity-60`}
                   >
-                    {paying === p.slug && <Loader2 className="animate-spin" size={16} />}
-                    {isCurrent ? "Active plan" : paying === p.slug ? "Redirecting…" : `Subscribe`}
+                    {paying === p.id && <Loader2 className="animate-spin" size={16} />}
+                    {isCurrent ? "Active plan" : paying === p.id ? "Redirecting…" : `Subscribe`}
                   </button>
                 </motion.div>
               );
