@@ -190,8 +190,8 @@ const Pricing = () => {
                   </ul>
 
                   <button
-                    onClick={() => subscribe(p.slug)}
-                    disabled={paying === p.slug || isCurrent}
+                    onClick={() => subscribe(p)}
+                    disabled={paying === p.id || isCurrent}
                     className={`w-full py-3 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
                       isCurrent
                         ? "bg-muted text-muted-foreground cursor-not-allowed"
@@ -200,8 +200,8 @@ const Pricing = () => {
                           : "bg-foreground text-background hover:opacity-90"
                     } disabled:opacity-60`}
                   >
-                    {paying === p.slug && <Loader2 className="animate-spin" size={16} />}
-                    {isCurrent ? "Active plan" : paying === p.slug ? "Redirecting…" : `Subscribe`}
+                    {paying === p.id && <Loader2 className="animate-spin" size={16} />}
+                    {isCurrent ? "Active plan" : paying === p.id ? "Redirecting…" : `Subscribe`}
                   </button>
                 </motion.div>
               );
