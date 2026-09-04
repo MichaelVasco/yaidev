@@ -260,46 +260,82 @@ export type Database = {
       }
       build_sessions: {
         Row: {
+          activity: Json
           category: string
           coins_spent: number
           created_at: string
+          custom_domain: string | null
+          deployment_status: string
+          domain_status: string
+          favicon_url: string | null
+          files: Json
           id: string
           metadata: Json
           payment_status: string
           preview: Json
+          progress: number
+          project_name: string | null
           prompt: string
           result: Json
+          slug: string | null
+          ssl_status: string
+          stage: string
           state: string
           updated_at: string
           user_id: string
+          versions: Json
         }
         Insert: {
+          activity?: Json
           category: string
           coins_spent?: number
           created_at?: string
+          custom_domain?: string | null
+          deployment_status?: string
+          domain_status?: string
+          favicon_url?: string | null
+          files?: Json
           id?: string
           metadata?: Json
           payment_status?: string
           preview?: Json
+          progress?: number
+          project_name?: string | null
           prompt: string
           result?: Json
+          slug?: string | null
+          ssl_status?: string
+          stage?: string
           state?: string
           updated_at?: string
           user_id: string
+          versions?: Json
         }
         Update: {
+          activity?: Json
           category?: string
           coins_spent?: number
           created_at?: string
+          custom_domain?: string | null
+          deployment_status?: string
+          domain_status?: string
+          favicon_url?: string | null
+          files?: Json
           id?: string
           metadata?: Json
           payment_status?: string
           preview?: Json
+          progress?: number
+          project_name?: string | null
           prompt?: string
           result?: Json
+          slug?: string | null
+          ssl_status?: string
+          stage?: string
           state?: string
           updated_at?: string
           user_id?: string
+          versions?: Json
         }
         Relationships: []
       }
