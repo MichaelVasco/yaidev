@@ -17,6 +17,8 @@ import ProjectAssistant from "./pages/ProjectAssistant.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import PaymentSuccess from "./pages/PaymentSuccess.tsx";
 import Admin from "./pages/Admin.tsx";
+import Workspace from "./pages/Workspace.tsx";
+import WorkspaceNew from "./pages/WorkspaceNew.tsx";
 import ScrollToHash from "./components/ScrollToHash";
 
 const queryClient = new QueryClient();
