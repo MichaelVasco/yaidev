@@ -47,7 +47,7 @@ export function openAIBuilder(opts: {
     return;
   }
 
-  const target = "/?builder=1";
+  const target = "/workspace/new";
   if (!user) {
     navigate(`/auth?redirect=${encodeURIComponent(target)}`);
     return;
