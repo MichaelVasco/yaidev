@@ -179,18 +179,26 @@ Return ONLY JSON: {"projectName":string,"requirements":string[],"architecture":s
       return jsonResponse({ ok: true, plan: result, activity, projectName: session.project_name || name, slug: session.slug || slug });
     }
 
-    // ---------- generate (1 coin) ----------
+    // ---------- generate (1 coin, or free for founder/unlimited entitlements) ----------
     if (action === "generate" || action === "patch") {
-      const s = await spend(userClient, user.id, `workspace_${action}_${category}`, sessionId);
-      if (!s?.ok) {
+      // Entitlement is resolved server-side from the database. The browser can never
+      // grant itself founder access.
+      const [{ data: roleRows }, { data: creditRow }] = await Promise.all([
+        admin.from("user_roles").select("role").eq("user_id", user.id),
+        admin.from("user_credits").select("paid_balance, lifetime_unlimited").eq("user_id", user.id).maybeSingle(),
+      ]);
+      const isFounder = (roleRows || []).some((r: any) => r.role === "founder" || r.role === "admin");
+      const unlimited = isFounder || !!creditRow?.lifetime_unlimited;
+      const balance = Number(creditRow?.paid_balance ?? 0);
+
+      if (!unlimited && balance < 1) {
         return jsonResponse({
           ok: false,
-          error: s?.error === "no_credits"
-            ? "You've used all your YAIDEV AI Coins. Subscribe to continue building."
-            : (s?.error || "Unable to start this build."),
+          error: "You've used all your YAIDEV AI Coins. Subscribe to continue building.",
           requiresPayment: true,
         });
       }
+
 
       const existing = Array.isArray(session.files) ? session.files : [];
       const isPatch = action === "patch";
