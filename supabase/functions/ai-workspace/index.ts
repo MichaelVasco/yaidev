@@ -303,7 +303,7 @@ Modify the EXISTING project. Return the FULL updated file set (include unchanged
         stage: "completed",
         progress: 100,
         payment_status: "paid",
-        coins_spent: (session.coins_spent || 0) + 1,
+        coins_spent: (session.coins_spent || 0) + (unlimited ? 0 : 1),
         deployment_status: "ready",
       }).eq("id", sessionId).eq("user_id", user.id);
 
