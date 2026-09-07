@@ -958,6 +958,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_founder: { Args: { _user_id: string }; Returns: boolean }
       spend_credit: {
         Args: {
           _amount?: number
