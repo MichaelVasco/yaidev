@@ -317,8 +317,13 @@ Modify the EXISTING project. Return the FULL updated file set (include unchanged
 
     return jsonResponse({ ok: false, error: `Unknown action: ${action}` });
   } catch (e: any) {
-    const msg = e?.message || "Workspace request failed";
-    console.error("[ai-workspace] fatal:", msg);
-    return jsonResponse({ ok: false, error: msg, retryable: true });
+    // Full technical detail is logged server-side only; the client gets a safe message.
+    console.error("[ai-workspace] fatal:", e?.stack || e?.message || e);
+    return jsonResponse({
+      ok: false,
+      retryable: true,
+      error: "YAIDEV AI Builder is temporarily unable to complete this request. Please try again.",
+    });
   }
+
 });
