@@ -958,6 +958,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_founder: { Args: { _user_id: string }; Returns: boolean }
       spend_credit: {
         Args: {
           _amount?: number
@@ -969,7 +970,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "founder"
       billing_cycle: "monthly" | "yearly"
       payment_provider: "paystack" | "stripe" | "flutterwave" | "demo"
       subscription_plan:
@@ -1111,7 +1112,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "founder"],
       billing_cycle: ["monthly", "yearly"],
       payment_provider: ["paystack", "stripe", "flutterwave", "demo"],
       subscription_plan: [
