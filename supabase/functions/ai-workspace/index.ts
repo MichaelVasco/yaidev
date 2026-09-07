@@ -229,12 +229,24 @@ Modify the EXISTING project. Return the FULL updated file set (include unchanged
         messages.push({ role: "user", content: `Brief: ${prompt}\n\nProject name: ${session.project_name || ""}` });
       }
 
-      const { result, meta } = await routeJSON({
-        feature: isPatch ? "workspace-patch" : "workspace-generate",
-        task: TASK_FOR[category] || "generic",
-        userId: user.id,
-        messages,
-      });
+      let result: any, meta: any;
+      try {
+        const out = await routeJSON({
+          feature: isPatch ? "workspace-patch" : "workspace-generate",
+          task: TASK_FOR[category] || "generic",
+          userId: user.id,
+          messages,
+        });
+        result = out.result; meta = out.meta;
+      } catch (err: any) {
+        // Real technical detail stays in the backend logs only.
+        console.error(`[ai-workspace] provider failure (${action}/${category}):`, err?.message || err);
+        return jsonResponse({
+          ok: false,
+          retryable: true,
+          error: "YAIDEV AI Builder is temporarily unable to complete this request. Please try again in a moment.",
+        });
+      }
 
       const r = result as any;
       const files = (Array.isArray(r?.files) ? r.files : [])
@@ -246,8 +258,27 @@ Modify the EXISTING project. Return the FULL updated file set (include unchanged
         }));
 
       if (!files.length) {
-        return jsonResponse({ ok: false, error: "The AI engine returned no files. Please retry." });
+        console.error(`[ai-workspace] empty file set from ${meta?.provider}/${meta?.model}`);
+        return jsonResponse({
+          ok: false,
+          retryable: true,
+          error: "YAIDEV AI Builder could not produce the project files this time. Please try again.",
+        });
       }
+
+      // Charge only after the build really succeeded. Founder / unlimited accounts are never charged.
+      let s: any = { ok: true, unlimited: true, paid_balance: balance };
+      if (!unlimited) {
+        s = await spend(userClient, user.id, `workspace_${action}_${category}`, sessionId);
+        if (!s?.ok) {
+          return jsonResponse({
+            ok: false,
+            error: "You've used all your YAIDEV AI Coins. Subscribe to continue building.",
+            requiresPayment: true,
+          });
+        }
+      }
+
 
       const versions = Array.isArray(session.versions) ? session.versions : [];
       const version = {
